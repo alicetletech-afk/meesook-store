@@ -1,6 +1,6 @@
 window.MEESOOK_SUPABASE = {
-  url: "https://aqfhxoujmsjzutfatlcq.supabase.co",
-  anonKey: "sb_publishable_OL-5g5Fao-As4CtRPYXejg_VCyqYXTV"
+  url: "https://rrhxuaycmzpcdmkldkym.supabase.co",
+  anonKey: "sb_publishable_h3Ee-QPMdJpColplYWO-YA_IKUZfvDI"
 };
 
 window.MeeSookAuth = (() => {
