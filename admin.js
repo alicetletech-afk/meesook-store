@@ -219,7 +219,6 @@ if(dp){
   return
 }let cl=e.target.closest('[data-close]');if(cl){$(cl.dataset.close).classList.add('hidden');return}});
 $('search').oninput=pos;$('filter').onchange=ro;$('customerSearch').oninput=rc;
-$('dashboardDate').onchange=dash;$('dashboardToday').onclick=()=>{$('dashboardDate').value=localDateKey(new Date());dash()};
 $('newOrderCustomer').onchange=renderSelectedCustomerPreview;
 $('newOrderProductSearch').oninput=renderNewOrderProducts;
 $('newOrderDeliveryType').onchange=()=>{
@@ -668,14 +667,23 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!$('messageModal').classList.contains('hidden')) $('messageModal').classList.add('hidden');
 });
 
+let dashboardPeriod='day';
 const localDateKey=d=>{const x=new Date(d);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10)};
+function dashboardRange(key,period=dashboardPeriod){const d=new Date(`${key}T00:00:00`);let start=new Date(d),end=new Date(d);if(period==='day'){end.setDate(end.getDate()+1)}else if(period==='month'){start.setDate(1);end=new Date(start);end.setMonth(end.getMonth()+1)}else if(period==='quarter'){start.setMonth(Math.floor(start.getMonth()/3)*3,1);end=new Date(start);end.setMonth(end.getMonth()+3)}else{start.setMonth(0,1);end=new Date(start);end.setFullYear(end.getFullYear()+1)}return {start:localDateKey(start),end:localDateKey(end),label:period==='day'?'วันที่เลือก':period==='month'?'เดือนที่เลือก':period==='quarter'?`ไตรมาส ${Math.floor(d.getMonth()/3)+1}/${d.getFullYear()+543}`:`ปี ${d.getFullYear()+543}`}}
+function periodLabel(period){return period==='day'?'เลือกวันที่':period==='month'?'เลือกเดือน':period==='quarter'?'เลือกไตรมาส':'เลือกปี'}
+$('dashboardDate').onchange=dash;
+$('dashboardToday').onclick=()=>{$('dashboardDate').value=localDateKey(new Date());dash()};
+document.querySelectorAll('[data-period]').forEach(button=>button.onclick=()=>{dashboardPeriod=button.dataset.period;document.querySelectorAll('[data-period]').forEach(x=>x.classList.toggle('active',x===button));$('periodDateLabel').textContent=periodLabel(dashboardPeriod);dash()});
 function dash(){
   const selectedKey=$('dashboardDate').value||localDateKey(new Date());
   $('dashboardDate').value=selectedKey;
-  const selectedOrders=orders.filter(x=>localDateKey(x.created_at)===selectedKey);
+  const range=dashboardRange(selectedKey);
+  const selectedOrders=orders.filter(x=>{const key=localDateKey(x.created_at);return key>=range.start&&key<range.end});
   const totalSales=orders.filter(paid).reduce((s,x)=>s+(+x.total||0),0);
   $('sales').textContent=money(selectedOrders.filter(paid).reduce((s,x)=>s+(+x.total||0),0));
   $('oc').textContent=selectedOrders.length;
+  $('salesLabel').textContent=`ยอดขาย${range.label}`;
+  $('ordersLabel').textContent=`ออเดอร์${range.label}`;
   $('allSales').textContent=money(totalSales);
   $('cc').textContent=customers.length;
   $('low').textContent=variants.filter(x=>+x.stock<=5).length;
