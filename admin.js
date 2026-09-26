@@ -383,7 +383,8 @@ async function importProductsFromExcel(file){
   if(!rows.length){showToast('ไม่พบแถวสินค้าที่มีชื่อสินค้าในไฟล์');return}
   const groups=new Map();
   rows.forEach(row=>{const key=row.legacy_id||row.name.toLowerCase(); if(!groups.has(key)) groups.set(key,{...row,variants:[]}); groups.get(key).variants.push(row)});
-  if(!confirm(`พบสินค้า ${groups.size} รายการ และตัวเลือก ${rows.length} รายการ\nยืนยันนำเข้าเข้าฐานข้อมูลหรือไม่?`)) return;
+  const approved=await openConfirm({title:'ยืนยันการนำเข้า Excel',text:`พบสินค้า ${groups.size} รายการ และตัวเลือก ${rows.length} รายการ ต้องการบันทึกเข้าฐานข้อมูลหรือไม่?`,okText:'นำเข้า'});
+  if(!approved) return;
   try{
     for(const group of groups.values()){
       const existing=products.find(p=>(group.legacy_id&&p.legacy_id===group.legacy_id)||(!group.legacy_id&&p.name===group.name));
