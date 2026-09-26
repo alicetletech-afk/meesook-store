@@ -165,3 +165,9 @@ window.MEESOOK_SUPABASE = {
 ## v9 POS form tweak
 - แยก `ชื่อลูกค้า` และ `เลขห้อง` ออกจากกันในหน้า POS
 - เวลา save order ผ่าน POS จะบันทึก name/room เข้า customer และ order ให้ตรงกัน
+
+
+## v10 overview layout
+- ปรับส่วนล่างของหน้า overview ให้สมดุลขึ้น
+- `ออเดอร์ล่าสุด` และ `ต้องเติมสต๊อก` กว้างเท่ากัน ไม่ยืดข้างเกินไป
+- ใส่ max-height + scroll ในรายการ เพื่อไม่ให้กล่องดูโล่งและยืดเกิน

@@ -121,3 +121,41 @@ aside{display:flex;flex-direction:column}
   .storefront-btn{margin-top:9px}
   .toast{left:12px;right:12px;bottom:12px;text-align:center}
 }
+
+
+/* v10 overview balance */
+#dash .cols{
+  grid-template-columns: 1fr 1fr;
+  align-items:start;
+}
+
+#dash .cols .panel{
+  min-height:300px;
+}
+
+#dash #recent,
+#dash #lowlist{
+  max-height:220px;
+  overflow:auto;
+}
+
+#dash .row{
+  align-items:flex-start;
+}
+
+#dash .row > div{
+  min-width:0;
+}
+
+#dash .row b{
+  word-break:break-word;
+}
+
+@media (max-width:1100px){
+  #dash .cols{
+    grid-template-columns:1fr;
+  }
+  #dash .cols .panel{
+    min-height:auto;
+  }
+}
