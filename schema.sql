@@ -291,3 +291,28 @@ create policy "authenticated manage cms" on public.cms_settings for all to authe
 
 grant execute on function public.create_store_order(jsonb,jsonb) to anon, authenticated;
 grant execute on function public.restore_order_stock(uuid) to authenticated;
+
+-- Product image uploads (public read, admin-only write).
+insert into storage.buckets (id, name, public)
+values ('product-images', 'product-images', true)
+on conflict (id) do update set public = true;
+
+drop policy if exists "public read product images" on storage.objects;
+create policy "public read product images" on storage.objects
+  for select to public using (bucket_id = 'product-images');
+
+drop policy if exists "admins upload product images" on storage.objects;
+create policy "admins upload product images" on storage.objects
+  for insert to authenticated
+  with check (bucket_id = 'product-images' and exists (select 1 from public.admin_users where user_id = (select auth.uid()) and active));
+
+drop policy if exists "admins update product images" on storage.objects;
+create policy "admins update product images" on storage.objects
+  for update to authenticated
+  using (bucket_id = 'product-images' and exists (select 1 from public.admin_users where user_id = (select auth.uid()) and active))
+  with check (bucket_id = 'product-images' and exists (select 1 from public.admin_users where user_id = (select auth.uid()) and active));
+
+drop policy if exists "admins delete product images" on storage.objects;
+create policy "admins delete product images" on storage.objects
+  for delete to authenticated
+  using (bucket_id = 'product-images' and exists (select 1 from public.admin_users where user_id = (select auth.uid()) and active));

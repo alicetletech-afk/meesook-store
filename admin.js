@@ -309,6 +309,7 @@ $('stocktable').onchange=async e=>{if(e.target.dataset.stock){let v=variants.fin
 function openOrder(id){let o=orders.find(x=>x.id===id);$('oeid').value=o.id;$('oname').value=o.customer_name||'';$('oroom').value=o.room||'';$('ophone').value=o.phone||'';$('otime').value=o.pickup_time||'';$('ostatus').value=o.status;$('olocation').value=o.delivery_location||'';$('onote').value=o.note||'';$('orderModal').classList.remove('hidden')}
 $('orderForm').onsubmit=async e=>{e.preventDefault();await MeeSookStore.updateOrder($('oeid').value,{customer_name:$('oname').value,room:$('oroom').value,phone:$('ophone').value,pickup_time:$('otime').value,status:$('ostatus').value,payment_status:['paid','ready','done'].includes($('ostatus').value)?'paid':'pending',delivery_location:$('olocation').value,note:$('onote').value});$('orderModal').classList.add('hidden');await refresh()};
 let productImageData="";
+let productImageFile=null;
 function variantRow(v={}){
   const id=v.id||crypto.randomUUID();
   return `<div class="variant-edit" data-vid="${id}">
@@ -341,6 +342,7 @@ function openProduct(pid=null){
   $('pactive').checked=p.active!==false;
   $('pimageUrl').value=p.image_url||'';
   $('pimageFile').value='';
+  productImageFile=null;
   renderProductImagePreview(p.image_url||'');
 
   const vs=isNew ? [] : variants.filter(x=>x.product_id===pid);
@@ -374,6 +376,7 @@ $('pimageUrl').oninput=()=>{
 $('pimageFile').onchange=e=>{
   const file=e.target.files?.[0];
   if(!file) return;
+  productImageFile=file;
   const reader=new FileReader();
   reader.onload=()=>{
     renderProductImagePreview(reader.result);
@@ -388,13 +391,24 @@ $('productForm').onsubmit=async e=>{
   const pid=$('peid').value;
   const existing=products.find(x=>x.id===pid);
 
+  let imageUrl=$('pimageUrl').value.trim()||(!productImageData.startsWith('data:')?productImageData:'');
+  if(productImageFile){
+    const supabaseClient=window.MeeSookAuth?.client?.();
+    if(!supabaseClient){showToast('ยังไม่ได้เชื่อมต่อ Supabase');return}
+    const safeName=productImageFile.name.toLowerCase().replace(/[^a-z0-9._-]+/g,'-');
+    const imagePath=`${pid}/${Date.now()}-${safeName||'product-image'}`;
+    const {error:uploadError}=await supabaseClient.storage.from('product-images').upload(imagePath,productImageFile,{upsert:true,contentType:productImageFile.type||'image/jpeg'});
+    if(uploadError){showToast(`อัปโหลดรูปไม่สำเร็จ: ${uploadError.message}`);return}
+    imageUrl=supabaseClient.storage.from('product-images').getPublicUrl(imagePath).data.publicUrl;
+  }
+
   const product={
     ...(existing||{}),
     id:pid,
     name:$('pname').value.trim(),
     category:$('pcat').value,
     description:$('pdesc').value.trim(),
-    image_url:$('pimageUrl').value.trim()||productImageData||'',
+    image_url:imageUrl,
     active:$('pactive').checked,
     sort_order:+$('psort').value||0
   };
