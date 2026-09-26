@@ -36,6 +36,7 @@ async function boot(){
 }
 const getVariants=pid=>variants.filter(v=>v.product_id===pid);
 const imageForVariant=(p,v)=>v?.image_url||p?.image_url||'';
+const priceRange=(vs)=>{const prices=vs.map(v=>Number(v.price)||0);if(!prices.length)return money(0);const min=Math.min(...prices),max=Math.max(...prices);return min===max?money(min):`฿${min.toLocaleString('th-TH')}-${max.toLocaleString('th-TH')}`};
 const qtyForProduct=pid=>Object.values(cart).filter(x=>x.product_id===pid).reduce((s,x)=>s+x.qty,0);
 const totalStock=pid=>getVariants(pid).reduce((s,v)=>s+(+v.stock||0),0);
 function availability(pid){
@@ -54,7 +55,6 @@ function render(){
   $("products").innerHTML=list.map(p=>{
     const vs=getVariants(p.id);
     const q=qtyForProduct(p.id);
-    const min=Math.min(...vs.map(v=>+v.price));
     const av=availability(p.id);
     const soldOut=av.cls==="out";
     const cardImage=vs.find(v=>v.image_url)?.image_url||p.image_url||'';
@@ -65,7 +65,7 @@ function render(){
       </div>
       <h4>${p.name}</h4>
       <p>${p.description||""}</p>
-      <div class="price">${money(min)}</div>
+      <div class="price">${priceRange(vs)}</div>
       <div class="card-actions">
         ${q
           ? `<div class="stepper"><button data-cardminus="${p.id}">−</button><b>${q}</b><button data-cardplus="${p.id}">+</button></div>`
