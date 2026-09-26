@@ -6,7 +6,6 @@
 
 ## เปิดดู prototype
 - `index.html` = หน้าร้าน
-- `login.html` = หน้าเข้าสู่ระบบหลังบ้าน
 - `admin.html` = Dashboard / POS / Orders / Customers / Inventory / CMS
 - ตอนยังไม่ใส่ Supabase จะใช้ `localStorage` + `seed.json`
 - พอใส่ Supabase URL/anon key ใน `supabase-config.js` ระบบจะสลับไปอ่าน/เขียน Supabase
@@ -72,7 +71,7 @@ insert into public.admin_users (user_id)
 values ('ใส่-UUID-ของผู้ใช้ที่สร้างไว้');
 ```
 
-3. เปิด `login.html` แล้วเข้าสู่ระบบด้วยบัญชีดังกล่าว ระบบจะพาไป `admin.html` อัตโนมัติ
+3. เปิด `admin.html` แล้วระบบจะดักให้เข้าสู่ระบบก่อนแสดงหลังบ้าน
 
 หลังจากเชื่อม Supabase แล้ว หน้าร้านยังเปิดดูสินค้าและส่งออเดอร์ได้ตามปกติ ส่วนข้อมูลลูกค้า ออเดอร์ สต๊อก และ CMS จะอ่าน/แก้ได้เฉพาะผู้ใช้ที่อยู่ใน `admin_users` เท่านั้น
 
