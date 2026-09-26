@@ -156,16 +156,28 @@ as $$
 declare
   v_order_id uuid;
   v_order_no text;
+  v_customer_id uuid;
   item jsonb;
   v_stock integer;
 begin
+  v_customer_id := nullif(p_order->>'customer_id','')::uuid;
+  if v_customer_id is null then
+    insert into public.customers(name, room, phone)
+    values(
+      coalesce(p_order->>'customer_name',''),
+      coalesce(p_order->>'room',''),
+      coalesce(p_order->>'phone','')
+    )
+    returning id into v_customer_id;
+  end if;
+
   insert into public.orders(
     customer_id, customer_name, room, phone, pickup_time,
     delivery_type, delivery_location, note, subtotal, total,
     status, payment_status, payment_method, channel
   )
   values(
-    nullif(p_order->>'customer_id','')::uuid,
+    v_customer_id,
     coalesce(p_order->>'customer_name',''),
     coalesce(p_order->>'room',''),
     coalesce(p_order->>'phone',''),
