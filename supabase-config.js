@@ -1,7 +1,6 @@
 window.MEESOOK_SUPABASE = {
-  // Paste from Supabase > Project Settings > API
-  url: "YOUR_SUPABASE_URL",
-  anonKey: "YOUR_SUPABASE_ANON_KEY"
+  url: "https://aqfhxoujmsjzutfatlcq.supabase.co",
+  anonKey: "sb_publishable_OL-5g5Fao-As4CtRPYXejg_VCyqYXTV"
 };
 
 window.MeeSookAuth = (() => {
