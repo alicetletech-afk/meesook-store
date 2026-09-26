@@ -16,6 +16,17 @@ window.MeeSookStore = (() => {
     window.MEESOOK_SUPABASE.anonKey &&
     !window.MEESOOK_SUPABASE.url.includes("YOUR_");
 
+  async function fetchWithTimeout(url, options={}, timeoutMs=15000){
+    const controller=new AbortController();
+    const timer=setTimeout(()=>controller.abort(),timeoutMs);
+    try{
+      return await fetch(url,{...options,signal:controller.signal});
+    }catch(error){
+      if(error.name==="AbortError") throw new Error("การเชื่อมต่อใช้เวลานานเกินไป กรุณาลองใหม่อีกครั้ง");
+      throw error;
+    }finally{clearTimeout(timer)}
+  }
+
   async function seed() {
     if (seedCache) return clone(seedCache);
     const res = await fetch("seed.json");
@@ -42,7 +53,7 @@ window.MeeSookStore = (() => {
       "Prefer": options.prefer || "return=representation",
       ...(options.headers||{})
     };
-    const res = await fetch(url, {...options, headers});
+    const res = await fetchWithTimeout(url, {...options, headers});
     if (!res.ok) throw new Error(await res.text());
     const text = await res.text();
     return text ? JSON.parse(text) : null;
@@ -119,7 +130,7 @@ window.MeeSookStore = (() => {
       // Production path: atomic SQL function created by schema.sql
       const cfg = window.MEESOOK_SUPABASE;
       const session = await window.MeeSookAuth?.session?.();
-      const res = await fetch(`${cfg.url}/rest/v1/rpc/create_store_order`, {
+      const res = await fetchWithTimeout(`${cfg.url}/rest/v1/rpc/create_store_order`, {
         method:"POST",
         headers:{
           "apikey":cfg.anonKey,
