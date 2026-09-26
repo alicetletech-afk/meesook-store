@@ -92,3 +92,30 @@ window.MEESOOK_SUPABASE = {
 5. payment record / payment proof ถ้าจะใช้
 6. image upload ผ่าน Supabase Storage ถ้าจะให้ CMS จัดการรูปจริง
 7. เพิ่ม audit log ถ้าต้องการ trace คนแก้ order/stock
+
+
+## v3 UX separation
+หน้าบ้านและหลังบ้านใช้ข้อมูลเดียวกัน แต่ห้ามแสดงข้อมูลเหมือนกันทั้งหมด
+
+### Storefront / ลูกค้าเห็น
+- ชื่อสินค้า
+- รูปสินค้า
+- ราคา
+- ตัวเลือกสินค้า
+- สถานะ `พร้อมส่ง / เหลือน้อย / หมดชั่วคราว`
+- ตะกร้า / Checkout / LINE
+
+### Admin / เจ้าของร้านเห็น
+- stock ตัวเลขจริง
+- SKU
+- customers
+- order detail
+- payment
+- inventory
+- sales summary
+- charts
+- edit/delete order
+- CMS
+
+**สำคัญ:** Storefront ห้าม expose stock quantity จริง แม้ว่าจะอ่าน stock จากฐานเดียวกัน
+เพื่อคำนวณ availability เท่านั้น

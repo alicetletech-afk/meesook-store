@@ -1,14 +1,134 @@
-<!doctype html><html lang="th"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>มีสุขส่งถึง</title><link rel="stylesheet" href="styles.css"></head><body>
-<main class="app">
-<header class="topbar"><div><small>MEE SOOK SONG THUENG</small><h1>มีสุขส่งถึง <span>♥</span></h1></div><a id="lineTop" class="line-mini" target="_blank">LINE</a></header>
-<section class="hero"><div><span class="hero-chip">ส่งฟรีที่ล็อบบี้</span><h2 id="heroTitle"></h2><p id="heroDelivery"></p><div class="hero-actions"><button id="shopNow" class="primary">เลือกซื้อสินค้า</button><a id="heroLine" class="secondary" target="_blank">สอบถามเพิ่มเติม</a></div></div><div class="hero-art"><div class="bag"><svg viewBox="0 0 64 64"><path d="M18 22h28l-3 30H21L18 22Zm8 0v-5a6 6 0 0 1 12 0v5h-4v-5a2 2 0 0 0-4 0v5h-4Z"/></svg></div></div></section>
-<section class="search-wrap"><label class="search"><span>⌕</span><input id="search" placeholder="ค้นหาสินค้า..."></label></section>
-<nav class="cats"><button class="active" data-cat="all">ทั้งหมด</button><button data-cat="water">น้ำดื่ม</button><button data-cat="rice">ข้าวสาร</button><button data-cat="noodle">มาม่า</button><button data-cat="other">อื่นๆ</button></nav>
-<section class="section-head" id="productSection"><div><small>SHOP</small><h3>ของพร้อมส่ง</h3></div><span id="count"></span></section>
-<section id="products" class="product-grid"></section>
-<section class="lower-cta"><div><small>LINE SUPPORT</small><h3 id="helpTitle"></h3><p id="helpBody"></p></div><a id="helpLine" target="_blank">สอบถามทาง LINE</a></section>
-</main>
-<button id="cartBar" class="cart-bar hidden"><span><b id="cartCount">0</b> รายการ</span><span><strong id="cartTotal">฿0</strong> · ดูตะกร้า ›</span></button>
-<div id="optionSheetWrap" class="sheet-wrap hidden"><section class="sheet compact"><div class="handle"></div><div class="sheet-head"><div><small>ADD TO CART</small><h3 id="optionTitle"></h3></div><button id="closeOption">×</button></div><div id="optionVariants" class="variant-list"></div><div class="qty-stepper"><button id="optMinus">−</button><strong id="optQty">1</strong><button id="optPlus">+</button></div><div class="summary"><span>รวม</span><strong id="optTotal"></strong></div><button id="confirmAdd" class="checkout">เพิ่มลงตะกร้า</button></section></div>
-<div id="cartSheetWrap" class="sheet-wrap hidden"><section class="sheet"><div class="handle"></div><div class="sheet-head"><div><small>YOUR ORDER</small><h3>ตะกร้าสินค้า</h3></div><button id="closeCart">×</button></div><div id="cartItems"></div><div class="form-grid"><label>ชื่อผู้สั่ง<input id="name"></label><label>เลขห้อง<input id="room"></label><label>เบอร์โทร<input id="phone"></label><label>เวลารับของ<input id="pickupTime" placeholder="เช่น 19:00"></label></div><label>จุดรับสินค้า<select id="deliveryType"><option value="lobby">ล็อบบี้ IDEO MOBI EASTGATE</option><option value="nearby">พื้นที่ใกล้เคียง</option></select></label><label id="nearbyWrap" class="hidden">ระบุสถานที่<input id="nearbyLocation"></label><label>หมายเหตุ<textarea id="note" rows="3"></textarea></label><div class="summary"><span>ยอดรวม</span><strong id="sheetTotal"></strong></div><button id="orderLine" class="checkout">ส่งออเดอร์</button></section></div>
-<script src="supabase-config.js"></script><script src="store.js"></script><script src="app.js"></script></body></html>
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#F7F1E5">
+  <title>มีสุขส่งถึง</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div>
+        <small>MEE SOOK SONG THUENG</small>
+        <h1>มีสุขส่งถึง <span>♥</span></h1>
+      </div>
+      <a id="lineTop" class="line-mini" target="_blank" rel="noopener">LINE</a>
+    </header>
+
+    <section class="hero">
+      <div class="hero-copy">
+        <span class="hero-chip">ส่งฟรีที่ล็อบบี้</span>
+        <h2 id="heroTitle"></h2>
+        <p id="heroDelivery"></p>
+        <div class="hero-actions">
+          <button id="shopNow" class="primary">เลือกซื้อสินค้า</button>
+          <a id="heroLine" class="secondary" target="_blank" rel="noopener">สอบถามเพิ่มเติม</a>
+        </div>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <div class="bag">
+          <svg viewBox="0 0 64 64"><path d="M18 22h28l-3 30H21L18 22Zm8 0v-5a6 6 0 0 1 12 0v5h-4v-5a2 2 0 0 0-4 0v5h-4Z"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <section class="search-wrap">
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13Zm0 1.8a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4Zm5.9 9.62 3.6 3.58-1.28 1.28-3.58-3.6 1.26-1.26Z"/></svg>
+        <input id="search" placeholder="ค้นหาสินค้า...">
+      </label>
+    </section>
+
+    <nav class="cats">
+      <button class="active" data-cat="all">ทั้งหมด</button>
+      <button data-cat="water">น้ำดื่ม</button>
+      <button data-cat="rice">ข้าวสาร</button>
+      <button data-cat="noodle">มาม่า</button>
+      <button data-cat="other">อื่นๆ</button>
+    </nav>
+
+    <section class="section-head" id="productSection">
+      <div>
+        <small>SHOP</small>
+        <h3>ของพร้อมส่ง</h3>
+      </div>
+      <span id="count"></span>
+    </section>
+
+    <section id="products" class="product-grid"></section>
+
+    <section class="lower-cta">
+      <div>
+        <small>LINE SUPPORT</small>
+        <h3 id="helpTitle"></h3>
+        <p id="helpBody"></p>
+      </div>
+      <a id="helpLine" target="_blank" rel="noopener">สอบถามทาง LINE</a>
+    </section>
+  </main>
+
+  <button id="cartBar" class="cart-bar hidden">
+    <span><b id="cartCount">0</b> รายการ</span>
+    <span><strong id="cartTotal">฿0</strong> · ดูตะกร้า ›</span>
+  </button>
+
+  <div id="optionSheetWrap" class="sheet-wrap hidden">
+    <section class="sheet compact">
+      <div class="handle"></div>
+      <div class="sheet-head">
+        <div><small>เลือกสินค้า</small><h3 id="optionTitle"></h3></div>
+        <button id="closeOption">×</button>
+      </div>
+      <div id="optionVariants" class="variant-list"></div>
+      <div class="qty-label">จำนวน</div>
+      <div class="qty-stepper">
+        <button id="optMinus">−</button>
+        <strong id="optQty">1</strong>
+        <button id="optPlus">+</button>
+      </div>
+      <div class="summary"><span>รวม</span><strong id="optTotal"></strong></div>
+      <button id="confirmAdd" class="checkout">เพิ่มลงตะกร้า</button>
+    </section>
+  </div>
+
+  <div id="cartSheetWrap" class="sheet-wrap hidden">
+    <section class="sheet">
+      <div class="handle"></div>
+      <div class="sheet-head">
+        <div><small>YOUR ORDER</small><h3>ตะกร้าสินค้า</h3></div>
+        <button id="closeCart">×</button>
+      </div>
+      <div id="cartItems"></div>
+
+      <div class="form-grid">
+        <label>ชื่อผู้สั่ง<input id="name" placeholder="กรอกชื่อ"></label>
+        <label>เลขห้อง<input id="room" placeholder="เช่น A1208"></label>
+        <label>เบอร์โทร<input id="phone" placeholder="08x-xxx-xxxx"></label>
+        <label>เวลารับของ<input id="pickupTime" placeholder="เช่น 19:00"></label>
+      </div>
+
+      <label>จุดรับสินค้า
+        <select id="deliveryType">
+          <option value="lobby">ล็อบบี้ IDEO MOBI EASTGATE</option>
+          <option value="nearby">พื้นที่ใกล้เคียง</option>
+        </select>
+      </label>
+
+      <label id="nearbyWrap" class="hidden">ระบุสถานที่<input id="nearbyLocation"></label>
+      <label>หมายเหตุ<textarea id="note" rows="3"></textarea></label>
+
+      <div class="summary"><span>ยอดรวม</span><strong id="sheetTotal"></strong></div>
+      <button id="orderLine" class="checkout">ส่งออเดอร์</button>
+    </section>
+  </div>
+
+  <script src="supabase-config.js"></script>
+  <script src="store.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
