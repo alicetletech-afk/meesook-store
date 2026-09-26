@@ -333,6 +333,8 @@ function variantRow(v={}){
     <input data-f="price" type="number" min="0" step="0.01" placeholder="ราคา" value="${v.price??''}" required>
     <input data-f="stock" type="number" min="0" placeholder="สต๊อก" value="${v.stock??0}" required>
     <input data-f="sku" placeholder="SKU" value="${v.sku||''}">
+    <input data-f="image_url" placeholder="URL รูป SKU" value="${v.image_url||''}">
+    <input data-image-file type="file" accept="image/*" aria-label="รูปของ ${v.label||'ตัวเลือกสินค้า'}">
     <button type="button" class="variant-remove" data-removevariant="${id}">×</button>
   </div>`;
 }
@@ -342,6 +344,15 @@ function renderProductImagePreview(src){
   $('productImagePreview').innerHTML=src
     ? `<img src="${src}" alt="product preview">`
     : `<span>ยังไม่มีรูปสินค้า</span>`;
+}
+async function uploadProductImage(file,pathPrefix){
+  const supabaseClient=window.MeeSookAuth?.client?.();
+  if(!supabaseClient) throw new Error('ยังไม่ได้เชื่อมต่อ Supabase');
+  const safeName=file.name.toLowerCase().replace(/[^a-z0-9._-]+/g,'-');
+  const imagePath=`${pathPrefix}/${Date.now()}-${safeName||'product-image'}`;
+  const {error}=await supabaseClient.storage.from('product-images').upload(imagePath,file,{upsert:true,contentType:file.type||'image/jpeg'});
+  if(error) throw error;
+  return supabaseClient.storage.from('product-images').getPublicUrl(imagePath).data.publicUrl;
 }
 
 function openProduct(pid=null){
@@ -362,7 +373,7 @@ function openProduct(pid=null){
   renderProductImagePreview(p.image_url||'');
 
   const vs=isNew ? [] : variants.filter(x=>x.product_id===pid);
-  $('variantEditor').innerHTML=(vs.length?vs:[{id:crypto.randomUUID(),label:'',price:'',stock:0,sku:''}]).map(variantRow).join('');
+  $('variantEditor').innerHTML=(vs.length?vs:[{id:crypto.randomUUID(),label:'',price:'',stock:0,sku:'',image_url:''}]).map(variantRow).join('');
 
   $('productModalTitle').textContent=isNew?'เพิ่มสินค้า':'แก้ไขสินค้า';
   $('deleteProductBtn').classList.toggle('hidden',isNew);
@@ -372,15 +383,15 @@ function openProduct(pid=null){
 $('addp').onclick=()=>openProduct();
 
 const importHeader=(value)=>String(value||'').trim().toLowerCase().replace(/[\s_\-()/]+/g,'');
-const importAliases={name:['ชื่อสินค้า','สินค้า','product','productname','name'],label:['ตัวเลือก','ตัวเลือกสินค้า','variant','variantlabel','label','option'],price:['ราคา','price'],stock:['สต๊อก','stock','จำนวน'],sku:['sku','รหัสsku'],category:['หมวด','หมวดหมู่','category'],description:['รายละเอียด','description'],legacy_id:['รหัสสินค้า','รหัสสินค้าเดิม','productid','legacyid'],image_url:['รูปภาพ','รูป','image','imageurl','image_url'],active:['เปิดขาย','active']};
+const importAliases={name:['ชื่อสินค้า','สินค้า','product','productname','name'],label:['ตัวเลือก','ตัวเลือกสินค้า','variant','variantlabel','label','option'],price:['ราคา','price'],stock:['สต๊อก','stock','จำนวน'],sku:['sku','รหัสsku'],category:['หมวด','หมวดหมู่','category'],description:['รายละเอียด','description'],legacy_id:['รหัสสินค้า','รหัสสินค้าเดิม','productid','legacyid'],image_url:['รูปภาพ','รูป','image','imageurl','image_url'],variant_image_url:['รูป SKU','รูปตัวเลือก','variantimage','variant_image_url'],active:['เปิดขาย','active']};
 function importValue(row,key){
   const aliases=importAliases[key].map(importHeader);
   const found=Object.keys(row).find(header=>aliases.includes(importHeader(header)));
   return found===undefined?'':row[found];
 }
 function downloadImportTemplate(){
-  const header=['ชื่อสินค้า','ตัวเลือก','ราคา','สต๊อก','SKU','หมวด','รายละเอียด','รหัสสินค้า','รูปภาพ'];
-  const sample=['น้ำดื่มสิงห์','ขวด','10','20','WATER-01','น้ำดื่ม','ขวด 1.5 ลิตร','',''];
+  const header=['ชื่อสินค้า','ตัวเลือก','ราคา','สต๊อก','SKU','หมวด','รายละเอียด','รหัสสินค้า','รูปภาพสินค้า','รูป SKU'];
+  const sample=['น้ำดื่มสิงห์','ขวด','10','20','WATER-01','น้ำดื่ม','ขวด 1.5 ลิตร','','',''];
   const csv=[header,sample].map(row=>row.map(value=>`"${String(value).replace(/"/g,'""')}"`).join(',')).join('\n');
   const blob=new Blob([`\ufeff${csv}`],{type:'text/csv;charset=utf-8'});
   const link=document.createElement('a'); link.href=URL.createObjectURL(blob); link.download='meesook-products-template.csv'; link.click(); URL.revokeObjectURL(link.href);
@@ -394,7 +405,7 @@ async function importProductsFromExcel(file){
     name:String(importValue(row,'name')).trim(), label:String(importValue(row,'label')).trim()||'ทั่วไป',
     price:Number(importValue(row,'price')||0), stock:Number(importValue(row,'stock')||0), sku:String(importValue(row,'sku')).trim(),
     category:String(importValue(row,'category')).trim()||'other', description:String(importValue(row,'description')).trim(),
-    legacy_id:String(importValue(row,'legacy_id')).trim(), image_url:String(importValue(row,'image_url')).trim(), active:String(importValue(row,'active')).toLowerCase()!=='false'
+    legacy_id:String(importValue(row,'legacy_id')).trim(), image_url:String(importValue(row,'image_url')).trim(), variant_image_url:String(importValue(row,'variant_image_url')).trim(), active:String(importValue(row,'active')).toLowerCase()!=='false'
   })).filter(row=>row.name);
   if(!rows.length){showToast('ไม่พบแถวสินค้าที่มีชื่อสินค้าในไฟล์');return}
   const groups=new Map();
@@ -409,7 +420,7 @@ async function importProductsFromExcel(file){
       await MeeSookStore.upsert('products',product);
       for(const item of group.variants){
         const old=variants.find(v=>v.product_id===product.id&&(item.sku&&v.sku===item.sku||!item.sku&&v.label===item.label));
-        const variant={...(old||{}),id:old?.id||crypto.randomUUID(),product_id:product.id,label:item.label,price:Number.isFinite(item.price)?item.price:0,stock:Number.isFinite(item.stock)?item.stock:0,sku:item.sku||old?.sku||'',active:true};
+        const variant={...(old||{}),id:old?.id||crypto.randomUUID(),product_id:product.id,label:item.label,price:Number.isFinite(item.price)?item.price:0,stock:Number.isFinite(item.stock)?item.stock:0,sku:item.sku||old?.sku||'',image_url:item.variant_image_url||old?.image_url||'',active:true};
         await MeeSookStore.upsert('variants',variant);
       }
     }
@@ -420,7 +431,7 @@ $('downloadImportTemplate').onclick=downloadImportTemplate;
 $('importProductsFile').onchange=async e=>{const file=e.target.files?.[0];if(file) await importProductsFromExcel(file);e.target.value=''};
 
 $('addVariantBtn').onclick=()=>{
-  $('variantEditor').insertAdjacentHTML('beforeend',variantRow({id:crypto.randomUUID(),label:'',price:'',stock:0,sku:''}));
+  $('variantEditor').insertAdjacentHTML('beforeend',variantRow({id:crypto.randomUUID(),label:'',price:'',stock:0,sku:'',image_url:''}));
 };
 
 $('variantEditor').onclick=e=>{
@@ -457,13 +468,7 @@ $('productForm').onsubmit=async e=>{
 
   let imageUrl=$('pimageUrl').value.trim()||(!productImageData.startsWith('data:')?productImageData:'');
   if(productImageFile){
-    const supabaseClient=window.MeeSookAuth?.client?.();
-    if(!supabaseClient){showToast('ยังไม่ได้เชื่อมต่อ Supabase');return}
-    const safeName=productImageFile.name.toLowerCase().replace(/[^a-z0-9._-]+/g,'-');
-    const imagePath=`${pid}/${Date.now()}-${safeName||'product-image'}`;
-    const {error:uploadError}=await supabaseClient.storage.from('product-images').upload(imagePath,productImageFile,{upsert:true,contentType:productImageFile.type||'image/jpeg'});
-    if(uploadError){showToast(`อัปโหลดรูปไม่สำเร็จ: ${uploadError.message}`);return}
-    imageUrl=supabaseClient.storage.from('product-images').getPublicUrl(imagePath).data.publicUrl;
+    try{imageUrl=await uploadProductImage(productImageFile,pid)}catch(error){showToast(`อัปโหลดรูปไม่สำเร็จ: ${error.message}`);return}
   }
 
   const product={
@@ -494,6 +499,11 @@ $('productForm').onsubmit=async e=>{
     keptIds.push(vid);
 
     const old=variants.find(v=>v.id===vid);
+    let variantImageUrl=fields.image_url.trim()||old?.image_url||'';
+    const variantImageFile=row.querySelector('[data-image-file]')?.files?.[0];
+    if(variantImageFile){
+      try{variantImageUrl=await uploadProductImage(variantImageFile,`${pid}/${vid}`)}catch(error){showToast(`อัปโหลดรูป ${fields.label} ไม่สำเร็จ: ${error.message}`);return}
+    }
     await MeeSookStore.upsert('variants',{
       ...(old||{}),
       id:vid,
@@ -502,6 +512,7 @@ $('productForm').onsubmit=async e=>{
       price:+fields.price||0,
       stock:+fields.stock||0,
       sku:fields.sku.trim(),
+      image_url:variantImageUrl,
       active:true
     });
   }

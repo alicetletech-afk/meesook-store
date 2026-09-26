@@ -35,6 +35,7 @@ async function boot(){
   render(); totals();
 }
 const getVariants=pid=>variants.filter(v=>v.product_id===pid);
+const imageForVariant=(p,v)=>v?.image_url||p?.image_url||'';
 const qtyForProduct=pid=>Object.values(cart).filter(x=>x.product_id===pid).reduce((s,x)=>s+x.qty,0);
 const totalStock=pid=>getVariants(pid).reduce((s,v)=>s+(+v.stock||0),0);
 function availability(pid){
@@ -56,9 +57,10 @@ function render(){
     const min=Math.min(...vs.map(v=>+v.price));
     const av=availability(p.id);
     const soldOut=av.cls==="out";
+    const cardImage=vs.find(v=>v.image_url)?.image_url||p.image_url||'';
     return `<article class="product-card">
       <div class="thumb">
-        <div class="thumb-placeholder">รูปสินค้า</div>
+        ${cardImage?`<img src="${cardImage}" alt="${p.name}">`:`<div class="thumb-placeholder">รูปสินค้า</div>`}
         <span class="availability ${av.cls}">${av.label}</span>
       </div>
       <h4>${p.name}</h4>
@@ -91,7 +93,7 @@ function openOption(pid,buy=false){
   if(!vs.length) return;
   pending={pid,variant_id:vs[0].id,qty:1,buy};
   $("optionTitle").textContent=p.name;
-  $("optionVariants").innerHTML=vs.map((v,i)=>`<button class="${i===0?"active":""}" data-v="${v.id}">${v.label} · ${money(v.price)}</button>`).join("");
+  $("optionVariants").innerHTML=vs.map((v,i)=>{const image=imageForVariant(p,v);return `<button class="${i===0?"active":""}" data-v="${v.id}">${image?`<img src="${image}" alt="">`:''}<span><b>${v.label}</b><small>${money(v.price)}</small></span></button>`}).join("");
   $("optQty").textContent=1;
   $("confirmAdd").textContent = buy ? "ไปหน้าส่งออเดอร์" : "เพิ่มลงตะกร้า";
   calcOpt();

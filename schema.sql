@@ -23,6 +23,7 @@ create table if not exists public.variants (
   product_id uuid not null references public.products(id) on delete cascade,
   label text not null,
   sku text unique,
+  image_url text not null default '',
   price numeric(12,2) not null check (price >= 0),
   stock integer not null default 0 check (stock >= 0),
   active boolean not null default true,

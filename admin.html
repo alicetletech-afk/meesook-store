@@ -8,7 +8,7 @@
 <section id="pos" class="view"><div class="pos"><div class="panel"><div class="ph"><h2>เลือกสินค้า</h2><input id="search" placeholder="ค้นหา"></div><div id="catalog" class="catalog"></div></div><div class="panel cart"><h2>รายการขาย</h2><div id="cart"></div><div class="total"><span>ยอดรวม</span><b id="total">฿0</b></div><div class="two"><label>ชื่อลูกค้า<input id="customer" placeholder="ชื่อลูกค้า"></label><label>เลขห้อง<input id="posRoom" placeholder="เช่น A1208"></label></div><label>เบอร์โทร<input id="posPhone" placeholder="08x-xxx-xxxx"></label><label>ชำระ<select id="payment"><option>โอนเงิน</option><option>เงินสด</option></select></label><button class="primary" id="checkout">บันทึกการขาย</button></div></div></section>
 <section id="orders" class="view"><div class="panel"><div class="ph"><h2>จัดการออเดอร์</h2><div class="toolbar"><button id="addOrderBtn">+ เพิ่มออเดอร์</button><select id="filter"><option value="all">ทั้งหมด</option><option value="pending">รอชำระ</option><option value="paid">ชำระแล้ว</option><option value="ready">พร้อมส่ง</option><option value="done">สำเร็จ</option><option value="cancelled">ยกเลิก</option></select></div></div><div id="ordertable" class="table"></div></div></section>
 <section id="customers" class="view"><div class="panel"><div class="ph"><h2>ข้อมูลลูกค้า</h2><input id="customerSearch" placeholder="ค้นชื่อ / ห้อง / เบอร์"></div><div id="customertable" class="table"></div></div></section>
-<section id="stock" class="view"><div class="panel"><div class="ph"><h2>สินค้าและสต๊อก</h2><div class="stock-actions"><label class="import-file"><input id="importProductsFile" type="file" accept=".xlsx,.xls,.csv">นำเข้า Excel</label><button id="downloadImportTemplate" type="button">ดาวน์โหลด Template</button><button id="deleteSelectedProducts" class="danger-outline" type="button" disabled>ลบที่เลือก</button><button id="addp">+ เพิ่มสินค้า</button></div></div><p class="import-help">Excel ใช้คอลัมน์: ชื่อสินค้า, ตัวเลือก, ราคา, สต๊อก, SKU, หมวด, รายละเอียด, รหัสสินค้า และรูปภาพ (เว้นว่างได้)</p><div id="stocktable" class="table"></div></div></section>
+<section id="stock" class="view"><div class="panel"><div class="ph"><h2>สินค้าและสต๊อก</h2><div class="stock-actions"><label class="import-file"><input id="importProductsFile" type="file" accept=".xlsx,.xls,.csv">นำเข้า Excel</label><button id="downloadImportTemplate" type="button">ดาวน์โหลด Template</button><button id="deleteSelectedProducts" class="danger-outline" type="button" disabled>ลบที่เลือก</button><button id="addp">+ เพิ่มสินค้า</button></div></div><p class="import-help">Excel ใช้คอลัมน์: ชื่อสินค้า, ตัวเลือก, ราคา, สต๊อก, SKU, หมวด, รายละเอียด, รหัสสินค้า, รูปภาพสินค้า และรูป SKU (เว้นว่างได้)</p><div id="stocktable" class="table"></div></div></section>
 <section id="cms" class="view"><div class="cols"><div class="panel"><h2>ข้อความหน้าเว็บ</h2><label>หัวข้อ Hero<input id="hero"></label><label>ข้อความจัดส่ง<input id="delivery"></label><label>Help Title<input id="help"></label><label>Help Body<input id="helpBody"></label><button class="primary" id="savecms">บันทึก CMS</button></div><div class="panel"><small>LIVE PREVIEW</small><div class="preview"><em>ส่งฟรีที่ล็อบบี้</em><h2 id="phero"></h2><p id="pdelivery"></p><button>เลือกซื้อสินค้า</button></div></div></div></section>
 </main></div>
 
@@ -89,6 +89,8 @@
         <span>ราคา</span>
         <span>สต๊อก</span>
         <span>SKU</span>
+        <span>รูป SKU (URL)</span>
+        <span>ไฟล์รูป</span>
         <span></span>
       </div>
 
