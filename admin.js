@@ -371,6 +371,8 @@ function variantRow(v={}){
 }
 
 function variantRows(){return [...document.querySelectorAll('.variant-edit')];}
+function switchView(id,label){document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.v===id));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===id));$('title').textContent=label||document.querySelector(`nav button[data-v="${id}"]`)?.textContent||'';$('mobileNav').value=id}
+$('mobileNav').onchange=e=>switchView(e.target.value,e.target.options[e.target.selectedIndex].textContent);
 function selectedVariantRow(){return document.querySelector(`.variant-edit[data-vid="${$('variantImageSelect')?.value}"]`)}
 function imageOrigin(position){return {center:'50% 50%',top:'50% 0%',bottom:'50% 100%',left:'0% 50%',right:'100% 50%'}[position]||'50% 50%'}
 function updateVariantImagePreview(src){

@@ -124,6 +124,16 @@ aside{display:flex;flex-direction:column}
 .toast.hidden{display:none}
 
 @media(max-width:850px){
+  body{overflow-x:hidden}
+  .shell{display:block;min-height:0}
+  aside{align-self:start;width:100%;min-height:0;height:auto}
+  nav{display:none}
+  .mobile-nav-picker{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:8px;margin:8px 0 9px;color:#d6e2dc;font-size:11px}
+  .mobile-nav-picker select{width:100%;border:1px solid rgba(255,255,255,.2);border-radius:11px;background:#467e68;color:#fff;padding:10px 12px;outline:0}
+  main{width:100%;min-width:0}
+  .panel{min-width:0}
+  .ph{flex-wrap:wrap}
+  .ph input,.ph select{max-width:100%}
   .storefront-btn{margin-top:9px}
   .toast{left:12px;right:12px;bottom:12px;text-align:center}
 }
@@ -482,3 +492,5 @@ aside{display:flex;flex-direction:column}
 /* Authentication */
 .admin-session{display:flex;align-items:center;gap:14px}.admin-session #adminEmail{font-size:13px;color:#66736b}.auth-gate{position:fixed;inset:0;z-index:50;display:grid;place-items:center;background:rgba(247,241,229,.96);padding:20px}.auth-gate.hidden{display:none}.auth-card{width:min(420px,100%);background:#fffdf8;border:1px solid #e7dfd0;border-radius:24px;padding:32px;box-shadow:0 20px 60px rgba(48,58,52,.12)}.auth-card h1{margin:8px 0}.auth-card p{color:#7c867e;margin:0 0 24px}.auth-card label{display:block;margin:14px 0}.auth-card input{width:100%;box-sizing:border-box;margin-top:7px}.auth-error{background:#fff0ef;color:#a3423d;border:1px solid #e7aaa5;border-radius:10px;padding:10px;margin:12px 0;font-size:13px}.ghost-btn{border:1px solid #d8d0c1;background:transparent;color:#4f5d55;border-radius:10px;padding:9px 12px;cursor:pointer}
 .stock-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.import-file{border:1px solid #d8d0c1;background:#fffdf8;color:#4f5d55;border-radius:10px;padding:9px 12px;cursor:pointer}.import-file input{display:none}.import-help{margin:-8px 0 16px;color:#7c867e;font-size:13px}
+.mobile-nav-picker{display:none}
+@media(max-width:850px){.mobile-nav-picker{display:grid}}
