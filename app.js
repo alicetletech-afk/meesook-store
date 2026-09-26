@@ -175,23 +175,27 @@ $("orderLine").onclick=async()=>{
       items:arr.map(x=>({variant_id:x.variant_id,product_name:x.product_name,variant_label:x.variant_label,unit_price:x.price,qty:x.qty}))
     });
     const text=[
-      "🛵 mesook | ออเดอร์ใหม่",
-      `🧾 เลขออเดอร์: ${result.order_no}`,
+      "🛒 มีสุขส่งถึง | ออเดอร์ใหม่",
+      `#${result.order_no}`,
       "",
-      "🛒 รายการสินค้า",
-      ...arr.map((x,i)=>`${i+1}. ${x.product_name} · ${x.variant_label} × ${x.qty} = ฿${(x.price*x.qty).toLocaleString("th-TH")}`),
+      "📦 รายการสินค้า",
+      ...arr.map((x,i)=>`${i+1}. ${x.product_name} (${x.variant_label}) × ${x.qty} — ${(x.price*x.qty).toLocaleString("th-TH")} บาท`),
       "",
-      `💰 ยอดรวม: ฿${total.toLocaleString("th-TH")}`,
+      `💛 ยอดรวม ${total.toLocaleString("th-TH")} บาท`,
       "",
-      "ข้อมูลผู้สั่ง",
+      "👤 ข้อมูลผู้สั่ง",
       `ชื่อ: ${customer.name}`,
       `ห้อง: ${customer.room}`,
       `โทร: ${customer.phone}`,
       "",
-      "การรับสินค้า",
-      `จุดรับ: ${delivery}`,
+      "📍 จุดรับสินค้า",
+      delivery,
       `เวลารับ: ${$("pickupTime").value.trim()||"ไม่ระบุ"}`,
-      `หมายเหตุ: ${$("note").value.trim()||"ไม่มี"}`
+      "",
+      "📝 หมายเหตุ",
+      $("note").value.trim()||"ไม่มี",
+      "",
+      "รบกวนน้องมีสุขเช็กสินค้าและยืนยันออเดอร์ให้ด้วยนะคะ 💛"
     ].join("\n");
     location.href=`https://line.me/R/oaMessage/@435ktnsf/?${encodeURIComponent(text)}`;
   }catch(error){
