@@ -3,9 +3,18 @@ const $=id=>document.getElementById(id), money=n=>`฿${Number(n).toLocaleString
 function clearCheckoutErrors(){
   $("checkoutError").classList.add("hidden");
   $("checkoutErrorText").textContent="";
-  ["name","room","phone","nearbyLocation"].forEach(id=>{
+  ["name","room","phone","nearbyLocation","pickupDate","pickupTime"].forEach(id=>{
     const el=$(id); if(el) el.classList.remove("field-error");
   });
+}
+function localDateKey(d){const x=new Date(d);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10)}
+function setupPickupSchedule(){
+  const date=$("pickupDate"),time=$("pickupTime");
+  if(!date||!time)return;
+  const now=new Date(),today=localDateKey(now);
+  date.min=today;date.value=today;
+  const rounded=Math.min(22*60,Math.max(8*60,Math.ceil((now.getHours()*60+now.getMinutes())/30)*30));
+  time.innerHTML='<option value="">เลือกเวลา</option>'+Array.from({length:29},(_,i)=>{const minutes=8*60+i*30,h=Math.floor(minutes/60),m=String(minutes%60).padStart(2,"0"),value=`${String(h).padStart(2,"0")}:${m}`;return `<option value="${value}" ${minutes===rounded?"selected":""}>${value} น.</option>`}).join("");
 }
 function showCheckoutErrors(items){
   clearCheckoutErrors();
@@ -164,6 +173,8 @@ $("orderLine").onclick=async()=>{
   if(!$("name").value.trim()) missing.push({id:"name",label:"ชื่อผู้สั่ง"});
   if(!$("room").value.trim()) missing.push({id:"room",label:"เลขห้อง"});
   if(!$("phone").value.trim()) missing.push({id:"phone",label:"เบอร์โทร"});
+  if(!$("pickupDate").value) missing.push({id:"pickupDate",label:"วันที่รับของ"});
+  if(!$("pickupTime").value) missing.push({id:"pickupTime",label:"เวลารับของ"});
   if($("deliveryType").value==="nearby" && !$("nearbyLocation").value.trim()){
     missing.push({id:"nearbyLocation",label:"สถานที่รับสินค้า"});
   }
@@ -179,7 +190,7 @@ $("orderLine").onclick=async()=>{
     const delivery=$("deliveryType").value==="lobby"?"ล็อบบี้ IDEO MOBI EASTGATE":$("nearbyLocation").value.trim();
     const total=arr.reduce((s,x)=>s+x.price*x.qty,0);
     const result=await MeeSookStore.createOrder({
-      order:{customer_name:customer.name,room:customer.room,phone:customer.phone,pickup_time:$("pickupTime").value.trim(),delivery_type:$("deliveryType").value,delivery_location:delivery,note:$("note").value.trim(),subtotal:total,total,status:"pending",payment_status:"pending",payment_method:"โอนเงิน",channel:"Web"},
+      order:{customer_name:customer.name,room:customer.room,phone:customer.phone,pickup_time:`${$("pickupDate").value} ${$("pickupTime").value}`,delivery_type:$("deliveryType").value,delivery_location:delivery,note:$("note").value.trim(),subtotal:total,total,status:"pending",payment_status:"pending",payment_method:"โอนเงิน",channel:"Web"},
       items:arr.map(x=>({variant_id:x.variant_id,product_name:x.product_name,variant_label:x.variant_label,unit_price:x.price,qty:x.qty}))
     });
     const text=[
@@ -198,7 +209,8 @@ $("orderLine").onclick=async()=>{
       "",
       "📍 จุดรับสินค้า",
       delivery,
-      `เวลารับ: ${$("pickupTime").value.trim()||"ไม่ระบุ"}`,
+      `วันที่รับ: ${new Date(`${$("pickupDate").value}T00:00:00`).toLocaleDateString("th-TH",{day:"numeric",month:"long",year:"numeric"})}`,
+      `เวลารับ: ${$("pickupTime").value||"ไม่ระบุ"}`,
       "",
       "📝 หมายเหตุ",
       $("note").value.trim()||"ไม่มี",
@@ -213,15 +225,16 @@ $("orderLine").onclick=async()=>{
   }finally{submit.disabled=false;submit.textContent="ส่งออเดอร์"}
 };
 
-["name","room","phone","nearbyLocation"].forEach(id=>{
+["name","room","phone","nearbyLocation","pickupDate","pickupTime"].forEach(id=>{
   const el=$(id);
   if(!el) return;
   el.addEventListener("input",()=>{
     el.classList.remove("field-error");
-    const remaining=["name","room","phone"].filter(x=>!$(x).value.trim());
+    const remaining=["name","room","phone","pickupDate","pickupTime"].filter(x=>!$(x).value.trim());
     if($("deliveryType").value==="nearby" && !$("nearbyLocation").value.trim()) remaining.push("nearbyLocation");
     if(remaining.length===0) clearCheckoutErrors();
   });
 });
 
+setupPickupSchedule();
 boot();
