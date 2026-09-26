@@ -48,13 +48,15 @@ function rc(){
 }
 function rs(){
   $('stocktable').innerHTML=`<table>
-    <tr><th>สินค้า</th><th>ตัวเลือก</th><th>SKU</th><th>ราคา</th><th>สต๊อก</th><th></th></tr>
+    <tr><th><input id="selectAllProducts" type="checkbox" aria-label="เลือกสินค้าทั้งหมด"></th><th>สินค้า</th><th>ตัวเลือก</th><th>SKU</th><th>ราคา</th><th>สต๊อก</th><th></th></tr>
     ${variants.map(v=>{
       let p=products.find(x=>x.id===v.product_id);
+      const firstVariant=variants.find(x=>x.product_id===p?.id)?.id===v.id;
       const img=p?.image_url
         ? `<img class="product-thumb-admin" src="${p.image_url}" alt="">`
         : `<span class="product-thumb-admin"></span>`;
       return `<tr>
+        <td>${firstVariant&&p?`<input data-product-select="${p.id}" type="checkbox" aria-label="เลือก ${p.name}">`:''}</td>
         <td><div class="product-name-cell">${img}<span><b>${p?.name||'-'}</b><br><span class="subtle">${p?.active===false?'ปิดขาย':'เปิดขาย'}</span></span></div></td>
         <td>${v.label}</td>
         <td>${v.sku||'-'}</td>
@@ -63,7 +65,13 @@ function rs(){
         <td><button data-editproduct="${p?.id}">แก้ไข</button></td>
       </tr>`
     }).join('')}
-  </table>`
+  </table>`;
+  updateProductSelectionState();
+}
+function updateProductSelectionState(){
+  const selected=document.querySelectorAll('[data-product-select]:checked');
+  const button=$('deleteSelectedProducts');
+  if(button){button.disabled=!selected.length;button.textContent=selected.length?`ลบที่เลือก (${selected.length})`:'ลบที่เลือก'}
 }
 function fillCms(){$('hero').value=cms.hero_title||'';$('delivery').value=cms.delivery_copy||'';$('help').value=cms.help_title||'';$('helpBody').value=cms.help_body||'';$('phero').textContent=cms.hero_title||'';$('pdelivery').textContent=cms.delivery_copy||''}
 
@@ -305,7 +313,15 @@ $('checkout').onclick=async()=>{
   await refresh();
   showToast('บันทึกการขายแล้ว');
 };
-$('stocktable').onchange=async e=>{if(e.target.dataset.stock){let v=variants.find(x=>x.id===e.target.dataset.stock);v.stock=Math.max(0,+e.target.value);await MeeSookStore.upsert('variants',v);await refresh()}};
+$('stocktable').onchange=async e=>{if(e.target.dataset.stock){let v=variants.find(x=>x.id===e.target.dataset.stock);v.stock=Math.max(0,+e.target.value);await MeeSookStore.upsert('variants',v);await refresh()}else if(e.target.dataset.productSelect||e.target.id==='selectAllProducts'){if(e.target.id==='selectAllProducts')document.querySelectorAll('[data-product-select]').forEach(x=>x.checked=e.target.checked);updateProductSelectionState()}};
+$('deleteSelectedProducts').onclick=async()=>{
+  const ids=[...document.querySelectorAll('[data-product-select]:checked')].map(x=>x.dataset.productSelect);
+  if(!ids.length)return;
+  const ok=await openConfirm({title:'ลบสินค้าที่เลือก?',text:`สินค้าที่เลือก ${ids.length} รายการ พร้อมตัวเลือกทั้งหมดจะถูกลบ`,okText:'ลบสินค้า'});
+  if(!ok)return;
+  for(const id of ids)await MeeSookStore.remove('products',id);
+  await refresh();showToast(`ลบสินค้าแล้ว ${ids.length} รายการ`);
+};
 function openOrder(id){let o=orders.find(x=>x.id===id);$('oeid').value=o.id;$('oname').value=o.customer_name||'';$('oroom').value=o.room||'';$('ophone').value=o.phone||'';$('otime').value=o.pickup_time||'';$('ostatus').value=o.status;$('olocation').value=o.delivery_location||'';$('onote').value=o.note||'';$('orderModal').classList.remove('hidden')}
 $('orderForm').onsubmit=async e=>{e.preventDefault();await MeeSookStore.updateOrder($('oeid').value,{customer_name:$('oname').value,room:$('oroom').value,phone:$('ophone').value,pickup_time:$('otime').value,status:$('ostatus').value,payment_status:['paid','ready','done'].includes($('ostatus').value)?'paid':'pending',delivery_location:$('olocation').value,note:$('onote').value});$('orderModal').classList.add('hidden');await refresh()};
 let productImageData="";
