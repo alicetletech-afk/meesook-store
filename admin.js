@@ -355,6 +355,53 @@ function openProduct(pid=null){
 
 $('addp').onclick=()=>openProduct();
 
+const importHeader=(value)=>String(value||'').trim().toLowerCase().replace(/[\s_\-()/]+/g,'');
+const importAliases={name:['ชื่อสินค้า','สินค้า','product','productname','name'],label:['ตัวเลือก','ตัวเลือกสินค้า','variant','variantlabel','label','option'],price:['ราคา','price'],stock:['สต๊อก','stock','จำนวน'],sku:['sku','รหัสsku'],category:['หมวด','หมวดหมู่','category'],description:['รายละเอียด','description'],legacy_id:['รหัสสินค้า','รหัสสินค้าเดิม','productid','legacyid'],image_url:['รูปภาพ','รูป','image','imageurl','image_url'],active:['เปิดขาย','active']};
+function importValue(row,key){
+  const aliases=importAliases[key].map(importHeader);
+  const found=Object.keys(row).find(header=>aliases.includes(importHeader(header)));
+  return found===undefined?'':row[found];
+}
+function downloadImportTemplate(){
+  const header=['ชื่อสินค้า','ตัวเลือก','ราคา','สต๊อก','SKU','หมวด','รายละเอียด','รหัสสินค้า','รูปภาพ'];
+  const sample=['น้ำดื่มสิงห์','ขวด','10','20','WATER-01','น้ำดื่ม','ขวด 1.5 ลิตร','',''];
+  const csv=[header,sample].map(row=>row.map(value=>`"${String(value).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob=new Blob([`\ufeff${csv}`],{type:'text/csv;charset=utf-8'});
+  const link=document.createElement('a'); link.href=URL.createObjectURL(blob); link.download='meesook-products-template.csv'; link.click(); URL.revokeObjectURL(link.href);
+}
+async function importProductsFromExcel(file){
+  if(!window.XLSX){showToast('กำลังโหลดตัวอ่าน Excel กรุณาลองใหม่อีกครั้ง');return}
+  const workbook=XLSX.read(await file.arrayBuffer(),{type:'array'});
+  const sheet=workbook.Sheets[workbook.SheetNames[0]];
+  const raw=XLSX.utils.sheet_to_json(sheet,{defval:''});
+  const rows=raw.map(row=>({
+    name:String(importValue(row,'name')).trim(), label:String(importValue(row,'label')).trim()||'ทั่วไป',
+    price:Number(importValue(row,'price')||0), stock:Number(importValue(row,'stock')||0), sku:String(importValue(row,'sku')).trim(),
+    category:String(importValue(row,'category')).trim()||'other', description:String(importValue(row,'description')).trim(),
+    legacy_id:String(importValue(row,'legacy_id')).trim(), image_url:String(importValue(row,'image_url')).trim(), active:String(importValue(row,'active')).toLowerCase()!=='false'
+  })).filter(row=>row.name);
+  if(!rows.length){showToast('ไม่พบแถวสินค้าที่มีชื่อสินค้าในไฟล์');return}
+  const groups=new Map();
+  rows.forEach(row=>{const key=row.legacy_id||row.name.toLowerCase(); if(!groups.has(key)) groups.set(key,{...row,variants:[]}); groups.get(key).variants.push(row)});
+  if(!confirm(`พบสินค้า ${groups.size} รายการ และตัวเลือก ${rows.length} รายการ\nยืนยันนำเข้าเข้าฐานข้อมูลหรือไม่?`)) return;
+  try{
+    for(const group of groups.values()){
+      const existing=products.find(p=>(group.legacy_id&&p.legacy_id===group.legacy_id)||(!group.legacy_id&&p.name===group.name));
+      const product={...(existing||{}),id:existing?.id||crypto.randomUUID(),name:group.name,category:group.category,description:group.description,image_url:group.image_url||existing?.image_url||'',active:group.active,sort_order:existing?.sort_order||0};
+      if(group.legacy_id) product.legacy_id=group.legacy_id;
+      await MeeSookStore.upsert('products',product);
+      for(const item of group.variants){
+        const old=variants.find(v=>v.product_id===product.id&&(item.sku&&v.sku===item.sku||!item.sku&&v.label===item.label));
+        const variant={...(old||{}),id:old?.id||crypto.randomUUID(),product_id:product.id,label:item.label,price:Number.isFinite(item.price)?item.price:0,stock:Number.isFinite(item.stock)?item.stock:0,sku:item.sku||old?.sku||'',active:true};
+        await MeeSookStore.upsert('variants',variant);
+      }
+    }
+    await refresh(); showToast(`นำเข้าสินค้าสำเร็จ ${groups.size} รายการ`);
+  }catch(error){console.error(error);showToast(`นำเข้าไม่สำเร็จ: ${error.message||'ตรวจสอบสิทธิ์หรือรูปแบบไฟล์'}`)}
+}
+$('downloadImportTemplate').onclick=downloadImportTemplate;
+$('importProductsFile').onchange=async e=>{const file=e.target.files?.[0];if(file) await importProductsFromExcel(file);e.target.value=''};
+
 $('addVariantBtn').onclick=()=>{
   $('variantEditor').insertAdjacentHTML('beforeend',variantRow({id:crypto.randomUUID(),label:'',price:'',stock:0,sku:''}));
 };
