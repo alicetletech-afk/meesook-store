@@ -164,15 +164,23 @@ $("orderLine").onclick=async()=>{
     return;
   }
 
-  const customer=await MeeSookStore.createCustomer({name:$("name").value.trim(),room:$("room").value.trim(),phone:$("phone").value.trim()});
-  const delivery=$("deliveryType").value==="lobby"?"ล็อบบี้ IDEO MOBI EASTGATE":$("nearbyLocation").value.trim();
-  const total=arr.reduce((s,x)=>s+x.price*x.qty,0);
-  const result=await MeeSookStore.createOrder({
-    order:{customer_id:customer.id,customer_name:customer.name,room:customer.room,phone:customer.phone,pickup_time:$("pickupTime").value.trim(),delivery_type:$("deliveryType").value,delivery_location:delivery,note:$("note").value.trim(),subtotal:total,total,status:"pending",payment_status:"pending",payment_method:"โอนเงิน",channel:"Web"},
-    items:arr.map(x=>({variant_id:x.variant_id,product_name:x.product_name,variant_label:x.variant_label,unit_price:x.price,qty:x.qty}))
-  });
-  const text=[`mesook | ออเดอร์ใหม่`,`เลขออเดอร์: ${result.order_no}`,"","รายการสินค้า",...arr.map((x,i)=>`${i+1}. ${x.product_name} (${x.variant_label}) x${x.qty} = ${x.price*x.qty} บาท`),"",`ยอดรวม`,`${total} บาท`,"","ข้อมูลผู้สั่ง",`ชื่อ: ${customer.name}`,`ห้อง: ${customer.room}`,`โทร: ${customer.phone}`,`เวลารับของ: ${$("pickupTime").value.trim()||"-"}`,"","จุดรับสินค้า",delivery,"","หมายเหตุ",$("note").value.trim()||"-"].join("\n");
-  location.href=`https://line.me/R/oaMessage/@435ktnsf/?${encodeURIComponent(text)}`;
+  const submit=$("orderLine");
+  submit.disabled=true;submit.textContent="กำลังส่งออเดอร์...";
+  try{
+    const customer=await MeeSookStore.createCustomer({name:$("name").value.trim(),room:$("room").value.trim(),phone:$("phone").value.trim()});
+    const delivery=$("deliveryType").value==="lobby"?"ล็อบบี้ IDEO MOBI EASTGATE":$("nearbyLocation").value.trim();
+    const total=arr.reduce((s,x)=>s+x.price*x.qty,0);
+    const result=await MeeSookStore.createOrder({
+      order:{customer_id:customer.id,customer_name:customer.name,room:customer.room,phone:customer.phone,pickup_time:$("pickupTime").value.trim(),delivery_type:$("deliveryType").value,delivery_location:delivery,note:$("note").value.trim(),subtotal:total,total,status:"pending",payment_status:"pending",payment_method:"โอนเงิน",channel:"Web"},
+      items:arr.map(x=>({variant_id:x.variant_id,product_name:x.product_name,variant_label:x.variant_label,unit_price:x.price,qty:x.qty}))
+    });
+    const text=[`mesook | ออเดอร์ใหม่`,`เลขออเดอร์: ${result.order_no}`,"","รายการสินค้า",...arr.map((x,i)=>`${i+1}. ${x.product_name} (${x.variant_label}) x${x.qty} = ${x.price*x.qty} บาท`),"",`ยอดรวม`,`${total} บาท`,"","ข้อมูลผู้สั่ง",`ชื่อ: ${customer.name}`,`ห้อง: ${customer.room}`,`โทร: ${customer.phone}`,`เวลารับของ: ${$("pickupTime").value.trim()||"-"}`,"","จุดรับสินค้า",delivery,"","หมายเหตุ",$("note").value.trim()||"-"].join("\n");
+    location.href=`https://line.me/R/oaMessage/@435ktnsf/?${encodeURIComponent(text)}`;
+  }catch(error){
+    console.error(error);
+    $("checkoutErrorText").textContent=`ส่งออเดอร์ไม่สำเร็จ: ${error.message||"กรุณาลองใหม่อีกครั้ง"}`;
+    $("checkoutError").classList.remove("hidden");
+  }finally{submit.disabled=false;submit.textContent="ส่งออเดอร์"}
 };
 
 ["name","room","phone","nearbyLocation"].forEach(id=>{

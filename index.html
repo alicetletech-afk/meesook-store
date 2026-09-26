@@ -98,7 +98,7 @@
   </div>
 
   <div id="cartSheetWrap" class="sheet-wrap hidden">
-    <section class="sheet">
+    <section class="sheet checkout-sheet">
       <div class="handle"></div>
       <div class="sheet-head">
         <div><small>YOUR ORDER</small><h3>ตะกร้าสินค้า</h3></div>
@@ -130,8 +130,10 @@
       <label id="nearbyWrap" class="hidden">ระบุสถานที่<input id="nearbyLocation"></label>
       <label>หมายเหตุ<textarea id="note" rows="3"></textarea></label>
 
-      <div class="summary"><span>ยอดรวม</span><strong id="sheetTotal"></strong></div>
-      <button id="orderLine" class="checkout">ส่งออเดอร์</button>
+      <div class="checkout-actions">
+        <div class="summary"><span>ยอดรวม</span><strong id="sheetTotal"></strong></div>
+        <button id="orderLine" class="checkout">ส่งออเดอร์</button>
+      </div>
     </section>
   </div>
 
