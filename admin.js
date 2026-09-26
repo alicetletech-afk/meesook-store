@@ -210,6 +210,7 @@ if(dp){
   return
 }let cl=e.target.closest('[data-close]');if(cl){$(cl.dataset.close).classList.add('hidden');return}});
 $('search').oninput=pos;$('filter').onchange=ro;$('customerSearch').oninput=rc;
+$('dashboardDate').onchange=dash;$('dashboardToday').onclick=()=>{$('dashboardDate').value=localDateKey(new Date());dash()};
 $('newOrderCustomer').onchange=renderSelectedCustomerPreview;
 $('newOrderProductSearch').oninput=renderNewOrderProducts;
 $('newOrderDeliveryType').onchange=()=>{
@@ -635,6 +636,22 @@ $('confirmModal').addEventListener('click',e=>{if(e.target===$('confirmModal'))c
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!$('confirmModal').classList.contains('hidden')) closeConfirm(false);
 });
+
+const localDateKey=d=>{const x=new Date(d);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10)};
+function dash(){
+  const selectedKey=$('dashboardDate').value||localDateKey(new Date());
+  $('dashboardDate').value=selectedKey;
+  const selectedOrders=orders.filter(x=>localDateKey(x.created_at)===selectedKey);
+  const totalSales=orders.filter(paid).reduce((s,x)=>s+(+x.total||0),0);
+  $('sales').textContent=money(selectedOrders.filter(paid).reduce((s,x)=>s+(+x.total||0),0));
+  $('oc').textContent=selectedOrders.length;
+  $('allSales').textContent=money(totalSales);
+  $('cc').textContent=customers.length;
+  $('low').textContent=variants.filter(x=>+x.stock<=5).length;
+  $('recent').innerHTML=[...selectedOrders].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5).map(x=>`<div class=row><span><b>${x.order_no}</b> · ${x.customer_name||'-'} / ${x.room||'-'}<br><small>${x.channel||'-'} · ${x.payment_method||'-'}</small></span><span><b>${money(x.total)}</b> <i class="tag ${x.status}">${st[x.status]}</i></span></div>`).join('')||'<div class=row>ยังไม่มีออเดอร์ในวันที่เลือก</div>';
+  $('lowlist').innerHTML=variants.filter(x=>+x.stock<=5).map(v=>{let p=products.find(x=>x.id===v.product_id);return `<div class=row><span><b>${p?.name||'-'}</b><br><small>${v.label} · ${v.sku||''}</small></span><i class=tag>เหลือ ${v.stock}</i></div>`}).join('')||'<div class=row>สต๊อกยังโอเค</div>';
+  drawSalesChart();drawStatusChart();
+}
 
 async function startAdmin(){
   const gate=$('authGate'), form=$('loginForm'), error=$('loginError');
