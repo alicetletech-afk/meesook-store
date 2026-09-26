@@ -73,7 +73,9 @@ function rs(){
 function updateProductSelectionState(){
   const selected=document.querySelectorAll('[data-product-select]:checked');
   const button=$('deleteSelectedProducts');
+  const categoryButton=$('changeSelectedCategory');
   if(button){button.disabled=!selected.length;button.textContent=selected.length?`ลบที่เลือก (${selected.length})`:'ลบที่เลือก'}
+  if(categoryButton){categoryButton.disabled=!selected.length;categoryButton.textContent=selected.length?`เปลี่ยนประเภทที่เลือก (${selected.length})`:'เปลี่ยนประเภทที่เลือก'}
 }
 function fillCms(){$('hero').value=cms.hero_title||'';$('delivery').value=cms.delivery_copy||'';$('help').value=cms.help_title||'';$('helpBody').value=cms.help_body||'';$('phero').textContent=cms.hero_title||'';$('pdelivery').textContent=cms.delivery_copy||''}
 function openCategoryEditor(id=null){const c=id?categories.find(x=>x.id===id):null;$('categoryId').value=c?.id||'';$('categoryName').value=c?.name||'';$('categorySlug').value=c?.slug||'';$('categorySort').value=c?.sort_order??(categories.length+1);$('categoryModalTitle').textContent=c?'แก้ไขประเภทสินค้า':'เพิ่มประเภทสินค้า';$('categoryModal').classList.remove('hidden')}
@@ -321,6 +323,25 @@ $('checkout').onclick=async()=>{
   showToast('บันทึกการขายแล้ว');
 };
 $('stocktable').onchange=async e=>{if(e.target.dataset.stock){let v=variants.find(x=>x.id===e.target.dataset.stock);v.stock=Math.max(0,+e.target.value);await MeeSookStore.upsert('variants',v);await refresh()}else if(e.target.dataset.productSelect||e.target.id==='selectAllProducts'){if(e.target.id==='selectAllProducts')document.querySelectorAll('[data-product-select]').forEach(x=>x.checked=e.target.checked);updateProductSelectionState()}};
+$('changeSelectedCategory').onclick=()=>{
+  const ids=[...document.querySelectorAll('[data-product-select]:checked')].map(x=>x.dataset.productSelect);
+  if(!ids.length)return;
+  $('bulkCategoryCount').textContent=ids.length;
+  $('bulkCategorySelect').innerHTML=categories.filter(x=>x.active!==false).map(c=>`<option value="${c.slug}">${c.name}</option>`).join('');
+  $('bulkCategoryModal').classList.remove('hidden');
+};
+$('bulkCategoryForm').onsubmit=async e=>{
+  e.preventDefault();
+  const ids=[...document.querySelectorAll('[data-product-select]:checked')].map(x=>x.dataset.productSelect);
+  const category=$('bulkCategorySelect').value;
+  if(!ids.length||!category)return;
+  try{
+    for(const id of ids){const p=products.find(x=>x.id===id);if(p)await MeeSookStore.upsert('products',{...p,category})}
+    $('bulkCategoryModal').classList.add('hidden');
+    await refresh();
+    showToast(`เปลี่ยนประเภทสินค้าแล้ว ${ids.length} รายการ`);
+  }catch(error){console.error(error);showToast(`เปลี่ยนประเภทไม่สำเร็จ: ${error.message||'กรุณาลองใหม่อีกครั้ง'}`)}
+};
 $('deleteSelectedProducts').onclick=async()=>{
   const ids=[...document.querySelectorAll('[data-product-select]:checked')].map(x=>x.dataset.productSelect);
   if(!ids.length)return;
@@ -630,17 +651,18 @@ $('savecms').onclick=async()=>{
 
 let toastTimer=null;
 function showToast(text){
-  $('toastText').textContent=text;
-  $('toast').classList.remove('hidden');
-  clearTimeout(toastTimer);
-  toastTimer=setTimeout(()=>$('toast').classList.add('hidden'),2200);
+  $('messageText').textContent=text;
+  $('messageModal').classList.remove('hidden');
 }
+$('messageOk').onclick=()=>$('messageModal').classList.add('hidden');
+$('messageModal').addEventListener('click',e=>{if(e.target===$('messageModal'))$('messageModal').classList.add('hidden')});
 
 $('confirmCancel').onclick=()=>closeConfirm(false);
 $('confirmOk').onclick=()=>closeConfirm(true);
 $('confirmModal').addEventListener('click',e=>{if(e.target===$('confirmModal'))closeConfirm(false)});
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!$('confirmModal').classList.contains('hidden')) closeConfirm(false);
+  if(e.key==='Escape'&&!$('messageModal').classList.contains('hidden')) $('messageModal').classList.add('hidden');
 });
 
 const localDateKey=d=>{const x=new Date(d);return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10)};
