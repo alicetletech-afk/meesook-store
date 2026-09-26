@@ -22,10 +22,45 @@ function drawStatusChart(){let c=$('statusChart'),ctx=c.getContext('2d'),W=c.wid
 function pos(){let q=$('search').value.toLowerCase(),rows=variants.map(v=>({v,p:products.find(p=>p.id===v.product_id)})).filter(x=>x.p&&x.p.active!==false&&x.v.active!==false&&`${x.p.name} ${x.v.label}`.toLowerCase().includes(q));$('catalog').innerHTML=rows.map(({p,v})=>`<button class=prod data-pv="${v.id}" ${+v.stock<1?'disabled':''}><strong>${p.name}</strong><span>${v.label} · เหลือ ${v.stock}</span><b>${money(v.price)}</b></button>`).join('');$('cart').innerHTML=Object.values(pc).map(x=>`<div class=row><span><b>${x.product_name}</b><br><small>${x.variant_label} · ${money(x.price)}</small></span><span class=qty><button data-m="${x.variant_id}">−</button><b>${x.qty}</b><button data-a="${x.variant_id}">+</button></span></div>`).join('')||'<div class=row>ยังไม่มีสินค้า</div>';$('total').textContent=money(Object.values(pc).reduce((s,x)=>s+x.price*x.qty,0))}
 function ro(){let f=$('filter').value,l=f==='all'?orders:orders.filter(x=>x.status===f);$('ordertable').innerHTML=`<table><tr><th>ออเดอร์</th><th>ลูกค้า</th><th>ห้อง</th><th>ช่องทาง</th><th>ยอด</th><th>สถานะ</th><th></th></tr>${[...l].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).map(o=>`<tr><td><b>${o.order_no}</b></td><td>${o.customer_name||'-'}<br><span class=subtle>${o.phone||''}</span></td><td>${o.room||'-'}</td><td>${o.channel||'-'}</td><td>${money(o.total)}</td><td><span class="tag ${o.status}">${st[o.status]}</span></td><td><div class=actions><button data-editorder="${o.id}">แก้ไข</button><button class=danger data-delorder="${o.id}">ลบ</button></div></td></tr>`).join('')}</table>`}
 function rc(){let q=$('customerSearch').value.toLowerCase().trim(),l=customers.filter(c=>!q||`${c.name} ${c.room} ${c.phone}`.toLowerCase().includes(q));$('customertable').innerHTML=`<table><tr><th>ลูกค้า</th><th>ห้อง</th><th>เบอร์โทร</th><th>ออเดอร์</th><th>ยอดซื้อรวม</th><th>ล่าสุด</th></tr>${l.map(c=>{let os=orders.filter(o=>o.customer_id===c.id),sum=os.filter(paid).reduce((s,o)=>s+(+o.total||0),0),last=os.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];return `<tr><td><b>${c.name||'-'}</b></td><td>${c.room||'-'}</td><td>${c.phone||'-'}</td><td>${os.length}</td><td>${money(sum)}</td><td>${last?new Date(last.created_at).toLocaleString('th-TH'):'-'}</td></tr>`}).join('')}</table>`}
-function rs(){$('stocktable').innerHTML=`<table><tr><th>สินค้า</th><th>ตัวเลือก</th><th>SKU</th><th>ราคา</th><th>สต๊อก</th><th></th></tr>${variants.map(v=>{let p=products.find(x=>x.id===v.product_id);return `<tr><td><b>${p?.name||'-'}</b></td><td>${v.label}</td><td>${v.sku||'-'}</td><td>${money(v.price)}</td><td><input data-stock="${v.id}" type=number min=0 value="${v.stock}" style="width:70px"></td><td><button data-editproduct="${p?.id}">แก้ไข</button></td></tr>`}).join('')}</table>`}
+function rs(){
+  $('stocktable').innerHTML=`<table>
+    <tr><th>สินค้า</th><th>ตัวเลือก</th><th>SKU</th><th>ราคา</th><th>สต๊อก</th><th></th></tr>
+    ${variants.map(v=>{
+      let p=products.find(x=>x.id===v.product_id);
+      const img=p?.image_url
+        ? `<img class="product-thumb-admin" src="${p.image_url}" alt="">`
+        : `<span class="product-thumb-admin"></span>`;
+      return `<tr>
+        <td><div class="product-name-cell">${img}<span><b>${p?.name||'-'}</b><br><span class="subtle">${p?.active===false?'ปิดขาย':'เปิดขาย'}</span></span></div></td>
+        <td>${v.label}</td>
+        <td>${v.sku||'-'}</td>
+        <td>${money(v.price)}</td>
+        <td><input data-stock="${v.id}" type="number" min="0" value="${v.stock}" style="width:70px"></td>
+        <td><button data-editproduct="${p?.id}">แก้ไข</button></td>
+      </tr>`
+    }).join('')}
+  </table>`
+}
 function fillCms(){$('hero').value=cms.hero_title||'';$('delivery').value=cms.delivery_copy||'';$('help').value=cms.help_title||'';$('helpBody').value=cms.help_body||'';$('phero').textContent=cms.hero_title||'';$('pdelivery').textContent=cms.delivery_copy||''}
 
-document.addEventListener('click',async e=>{let n=e.target.closest('[data-v]');if(n){document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===n));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===n.dataset.v));$('title').textContent=n.textContent;return}let pv=e.target.closest('[data-pv]');if(pv){let v=variants.find(x=>x.id===pv.dataset.pv),p=products.find(x=>x.id===v.product_id);if(!pc[v.id])pc[v.id]={variant_id:v.id,product_name:p.name,variant_label:v.label,price:+v.price,qty:0};pc[v.id].qty=Math.min(+v.stock,pc[v.id].qty+1);pos();return}let a=e.target.closest('[data-a]');if(a){let v=variants.find(x=>x.id===a.dataset.a);pc[v.id].qty=Math.min(+v.stock,pc[v.id].qty+1);pos();return}let m=e.target.closest('[data-m]');if(m){pc[m.dataset.m].qty--;if(pc[m.dataset.m].qty<1)delete pc[m.dataset.m];pos();return}let eo=e.target.closest('[data-editorder]');if(eo){openOrder(eo.dataset.editorder);return}let del=e.target.closest('[data-delorder]');if(del){let o=orders.find(x=>x.id===del.dataset.delorder);let ok=await openConfirm({title:"ลบออเดอร์?",text:`ออเดอร์ ${o.order_no} จะถูกลบออกจากระบบ และไม่สามารถย้อนกลับได้`,okText:"ลบออเดอร์"});if(ok){await MeeSookStore.deleteOrder(o.id);await refresh()}return}let ep=e.target.closest('[data-editproduct]');if(ep){openProduct(ep.dataset.editproduct);return}let cl=e.target.closest('[data-close]');if(cl){$(cl.dataset.close).classList.add('hidden');return}});
+document.addEventListener('click',async e=>{let n=e.target.closest('[data-v]');if(n){document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===n));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===n.dataset.v));$('title').textContent=n.textContent;return}let pv=e.target.closest('[data-pv]');if(pv){let v=variants.find(x=>x.id===pv.dataset.pv),p=products.find(x=>x.id===v.product_id);if(!pc[v.id])pc[v.id]={variant_id:v.id,product_name:p.name,variant_label:v.label,price:+v.price,qty:0};pc[v.id].qty=Math.min(+v.stock,pc[v.id].qty+1);pos();return}let a=e.target.closest('[data-a]');if(a){let v=variants.find(x=>x.id===a.dataset.a);pc[v.id].qty=Math.min(+v.stock,pc[v.id].qty+1);pos();return}let m=e.target.closest('[data-m]');if(m){pc[m.dataset.m].qty--;if(pc[m.dataset.m].qty<1)delete pc[m.dataset.m];pos();return}let eo=e.target.closest('[data-editorder]');if(eo){openOrder(eo.dataset.editorder);return}let del=e.target.closest('[data-delorder]');if(del){let o=orders.find(x=>x.id===del.dataset.delorder);let ok=await openConfirm({title:"ลบออเดอร์?",text:`ออเดอร์ ${o.order_no} จะถูกลบออกจากระบบ และไม่สามารถย้อนกลับได้`,okText:"ลบออเดอร์"});if(ok){await MeeSookStore.deleteOrder(o.id);await refresh()}return}let ep=e.target.closest('[data-editproduct]');if(ep){openProduct(ep.dataset.editproduct);return}
+let dp=e.target.closest('#deleteProductBtn');
+if(dp){
+  const pid=$('peid').value;
+  const p=products.find(x=>x.id===pid);
+  const ok=await openConfirm({
+    title:'ลบสินค้า?',
+    text:`${p?.name||'สินค้านี้'} จะถูกลบพร้อมตัวเลือกทั้งหมด`,
+    okText:'ลบสินค้า'
+  });
+  if(ok){
+    await MeeSookStore.remove('products',pid);
+    $('productModal').classList.add('hidden');
+    await refresh();
+    showToast('ลบสินค้าแล้ว');
+  }
+  return
+}let cl=e.target.closest('[data-close]');if(cl){$(cl.dataset.close).classList.add('hidden');return}});
 $('search').oninput=pos;$('filter').onchange=ro;$('customerSearch').oninput=rc;
 $('checkout').onclick=async()=>{
   let items=Object.values(pc);
@@ -57,8 +92,134 @@ $('checkout').onclick=async()=>{
 $('stocktable').onchange=async e=>{if(e.target.dataset.stock){let v=variants.find(x=>x.id===e.target.dataset.stock);v.stock=Math.max(0,+e.target.value);await MeeSookStore.upsert('variants',v);await refresh()}};
 function openOrder(id){let o=orders.find(x=>x.id===id);$('oeid').value=o.id;$('oname').value=o.customer_name||'';$('oroom').value=o.room||'';$('ophone').value=o.phone||'';$('otime').value=o.pickup_time||'';$('ostatus').value=o.status;$('olocation').value=o.delivery_location||'';$('onote').value=o.note||'';$('orderModal').classList.remove('hidden')}
 $('orderForm').onsubmit=async e=>{e.preventDefault();await MeeSookStore.updateOrder($('oeid').value,{customer_name:$('oname').value,room:$('oroom').value,phone:$('ophone').value,pickup_time:$('otime').value,status:$('ostatus').value,payment_status:['paid','ready','done'].includes($('ostatus').value)?'paid':'pending',delivery_location:$('olocation').value,note:$('onote').value});$('orderModal').classList.add('hidden');await refresh()};
-function openProduct(pid){let p=products.find(x=>x.id===pid),vs=variants.filter(x=>x.product_id===pid);$('peid').value=p.id;$('pname').value=p.name;$('pcat').value=p.category;$('pdesc').value=p.description||'';$('variantEditor').innerHTML=vs.map(v=>`<div class=variant-edit data-vid="${v.id}"><input data-f=label value="${v.label}"><input data-f=price type=number value="${v.price}"><input data-f=stock type=number value="${v.stock}"><input data-f=sku value="${v.sku||''}"></div>`).join('');$('productModal').classList.remove('hidden')}
-$('productForm').onsubmit=async e=>{e.preventDefault();let pid=$('peid').value,p=products.find(x=>x.id===pid);await MeeSookStore.upsert('products',{...p,name:$('pname').value,category:$('pcat').value,description:$('pdesc').value});for(const row of document.querySelectorAll('.variant-edit')){let v=variants.find(x=>x.id===row.dataset.vid),fields=[...row.querySelectorAll('[data-f]')].reduce((o,i)=>(o[i.dataset.f]=i.value,o),{});await MeeSookStore.upsert('variants',{...v,label:fields.label,price:+fields.price,stock:+fields.stock,sku:fields.sku})}$('productModal').classList.add('hidden');await refresh()};
+let productImageData="";
+function variantRow(v={}){
+  const id=v.id||crypto.randomUUID();
+  return `<div class="variant-edit" data-vid="${id}">
+    <input data-f="label" placeholder="เช่น ขวด / แพ็ค" value="${v.label||''}" required>
+    <input data-f="price" type="number" min="0" step="0.01" placeholder="ราคา" value="${v.price??''}" required>
+    <input data-f="stock" type="number" min="0" placeholder="สต๊อก" value="${v.stock??0}" required>
+    <input data-f="sku" placeholder="SKU" value="${v.sku||''}">
+    <button type="button" class="variant-remove" data-removevariant="${id}">×</button>
+  </div>`;
+}
+
+function renderProductImagePreview(src){
+  productImageData=src||"";
+  $('productImagePreview').innerHTML=src
+    ? `<img src="${src}" alt="product preview">`
+    : `<span>ยังไม่มีรูปสินค้า</span>`;
+}
+
+function openProduct(pid=null){
+  const isNew=!pid;
+  const p=isNew
+    ? {id:crypto.randomUUID(),name:'',category:'other',description:'',image_url:'',active:true,sort_order:0}
+    : products.find(x=>x.id===pid);
+
+  $('peid').value=p.id;
+  $('pname').value=p.name||'';
+  $('pcat').value=p.category||'other';
+  $('pdesc').value=p.description||'';
+  $('psort').value=p.sort_order??0;
+  $('pactive').checked=p.active!==false;
+  $('pimageUrl').value=p.image_url||'';
+  $('pimageFile').value='';
+  renderProductImagePreview(p.image_url||'');
+
+  const vs=isNew ? [] : variants.filter(x=>x.product_id===pid);
+  $('variantEditor').innerHTML=(vs.length?vs:[{id:crypto.randomUUID(),label:'',price:'',stock:0,sku:''}]).map(variantRow).join('');
+
+  $('productModalTitle').textContent=isNew?'เพิ่มสินค้า':'แก้ไขสินค้า';
+  $('deleteProductBtn').classList.toggle('hidden',isNew);
+  $('productModal').classList.remove('hidden');
+}
+
+$('addp').onclick=()=>openProduct();
+
+$('addVariantBtn').onclick=()=>{
+  $('variantEditor').insertAdjacentHTML('beforeend',variantRow({id:crypto.randomUUID(),label:'',price:'',stock:0,sku:''}));
+};
+
+$('variantEditor').onclick=e=>{
+  const btn=e.target.closest('[data-removevariant]');
+  if(!btn) return;
+  const rows=[...document.querySelectorAll('.variant-edit')];
+  if(rows.length<=1){showToast('สินค้าต้องมีอย่างน้อย 1 ตัวเลือก');return}
+  btn.closest('.variant-edit').remove();
+};
+
+$('pimageUrl').oninput=()=>{
+  const url=$('pimageUrl').value.trim();
+  if(url) renderProductImagePreview(url);
+  else if(!productImageData.startsWith('data:')) renderProductImagePreview('');
+};
+
+$('pimageFile').onchange=e=>{
+  const file=e.target.files?.[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    renderProductImagePreview(reader.result);
+    $('pimageUrl').value='';
+  };
+  reader.readAsDataURL(file);
+};
+
+$('productForm').onsubmit=async e=>{
+  e.preventDefault();
+
+  const pid=$('peid').value;
+  const existing=products.find(x=>x.id===pid);
+
+  const product={
+    ...(existing||{}),
+    id:pid,
+    name:$('pname').value.trim(),
+    category:$('pcat').value,
+    description:$('pdesc').value.trim(),
+    image_url:$('pimageUrl').value.trim()||productImageData||'',
+    active:$('pactive').checked,
+    sort_order:+$('psort').value||0
+  };
+
+  if(!product.name){showToast('กรอกชื่อสินค้าก่อน');return}
+
+  const rows=[...document.querySelectorAll('.variant-edit')];
+  if(!rows.length){showToast('เพิ่มตัวเลือกสินค้าอย่างน้อย 1 รายการ');return}
+
+  await MeeSookStore.upsert('products',product);
+
+  const existingIds=variants.filter(v=>v.product_id===pid).map(v=>v.id);
+  const keptIds=[];
+
+  for(const row of rows){
+    const fields=[...row.querySelectorAll('[data-f]')].reduce((o,i)=>(o[i.dataset.f]=i.value,o),{});
+    if(!fields.label.trim()){showToast('กรอกชื่อตัวเลือกสินค้าให้ครบ');return}
+    const vid=row.dataset.vid||crypto.randomUUID();
+    keptIds.push(vid);
+
+    const old=variants.find(v=>v.id===vid);
+    await MeeSookStore.upsert('variants',{
+      ...(old||{}),
+      id:vid,
+      product_id:pid,
+      label:fields.label.trim(),
+      price:+fields.price||0,
+      stock:+fields.stock||0,
+      sku:fields.sku.trim(),
+      active:true
+    });
+  }
+
+  for(const vid of existingIds.filter(id=>!keptIds.includes(id))){
+    await MeeSookStore.remove('variants',vid);
+  }
+
+  $('productModal').classList.add('hidden');
+  await refresh();
+  showToast(existing?'บันทึกการแก้ไขสินค้าแล้ว':'เพิ่มสินค้าแล้ว');
+};
 $('savecms').onclick=async()=>{
   cms={
     ...cms,

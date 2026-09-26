@@ -13,7 +13,95 @@
 </main></div>
 
 <div class="modal hidden" id="orderModal"><form id="orderForm"><div class="ph"><h2>แก้ไขออเดอร์</h2><button type="button" data-close="orderModal">×</button></div><input type="hidden" id="oeid"><div class="two"><label>ชื่อลูกค้า<input id="oname"></label><label>ห้อง<input id="oroom"></label></div><div class="two"><label>เบอร์โทร<input id="ophone"></label><label>เวลารับ<input id="otime"></label></div><label>สถานะ<select id="ostatus"><option value="pending">รอชำระ</option><option value="paid">ชำระแล้ว</option><option value="ready">พร้อมส่ง</option><option value="done">สำเร็จ</option><option value="cancelled">ยกเลิก</option></select></label><label>สถานที่รับ<input id="olocation"></label><label>หมายเหตุ<input id="onote"></label><button class="primary">บันทึกออเดอร์</button></form></div>
-<div class="modal hidden" id="productModal"><form id="productForm"><div class="ph"><h2>แก้ไขสินค้า</h2><button type="button" data-close="productModal">×</button></div><input type="hidden" id="peid"><label>ชื่อสินค้า<input id="pname"></label><div class="two"><label>หมวด<select id="pcat"><option value="water">น้ำดื่ม</option><option value="rice">ข้าวสาร</option><option value="noodle">มาม่า</option><option value="other">อื่นๆ</option></select></label><label>รายละเอียด<input id="pdesc"></label></div><div id="variantEditor"></div><button class="primary">บันทึกสินค้า</button></form></div>
+<div class="modal hidden" id="productModal">
+  <form id="productForm" class="product-editor">
+    <div class="ph modal-title-row">
+      <div>
+        <small>PRODUCT MANAGER</small>
+        <h2 id="productModalTitle">เพิ่มสินค้า</h2>
+      </div>
+      <button type="button" data-close="productModal">×</button>
+    </div>
+
+    <input type="hidden" id="peid">
+
+    <div class="product-editor-grid">
+      <section class="product-image-panel">
+        <div class="product-image-preview" id="productImagePreview">
+          <span>ยังไม่มีรูปสินค้า</span>
+        </div>
+
+        <label>รูปสินค้า
+          <input type="file" id="pimageFile" accept="image/*">
+        </label>
+
+        <label>หรือ Image URL
+          <input id="pimageUrl" placeholder="https://...">
+        </label>
+
+        <p class="helper-text">
+          Prototype: เลือกรูปจากเครื่องได้เลย<br>
+          Production: Cody ต่อ Supabase Storage แล้วเก็บ URL ใน image_url
+        </p>
+      </section>
+
+      <section>
+        <label>ชื่อสินค้า
+          <input id="pname" placeholder="เช่น สิงห์ 1.5 ล." required>
+        </label>
+
+        <div class="two">
+          <label>หมวด
+            <select id="pcat">
+              <option value="water">น้ำดื่ม</option>
+              <option value="rice">ข้าวสาร</option>
+              <option value="noodle">มาม่า</option>
+              <option value="other">อื่นๆ</option>
+            </select>
+          </label>
+
+          <label>ลำดับแสดง
+            <input id="psort" type="number" min="0" value="0">
+          </label>
+        </div>
+
+        <label>รายละเอียด
+          <textarea id="pdesc" rows="3" placeholder="คำอธิบายสั้นๆ ที่ลูกค้าเห็น"></textarea>
+        </label>
+
+        <label class="toggle-row">
+          <input id="pactive" type="checkbox" checked>
+          <span>เปิดขาย / แสดงบนหน้าร้าน</span>
+        </label>
+      </section>
+    </div>
+
+    <div class="variant-section">
+      <div class="ph">
+        <div>
+          <small>VARIANTS</small>
+          <h3>ตัวเลือกสินค้า / ราคา / สต๊อก</h3>
+        </div>
+        <button type="button" id="addVariantBtn">+ เพิ่มตัวเลือก</button>
+      </div>
+
+      <div class="variant-header">
+        <span>ตัวเลือก</span>
+        <span>ราคา</span>
+        <span>สต๊อก</span>
+        <span>SKU</span>
+        <span></span>
+      </div>
+
+      <div id="variantEditor"></div>
+    </div>
+
+    <div class="product-form-actions">
+      <button type="button" id="deleteProductBtn" class="danger-outline hidden">ลบสินค้า</button>
+      <button class="primary" type="submit">บันทึกสินค้า</button>
+    </div>
+  </form>
+</div>
 
 <div class="modal hidden" id="confirmModal">
   <section class="confirm-card">
