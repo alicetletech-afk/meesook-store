@@ -5,8 +5,10 @@ window.MeeSookStore = (() => {
     customers: "ms2_customers",
     orders: "ms2_orders",
     order_items: "ms2_order_items",
-    cms: "ms2_cms"
+    cms: "ms2_cms",
+    categories: "ms2_categories"
   };
+  const defaultCategories=[{id:"water",slug:"water",name:"น้ำดื่ม",sort_order:1,active:true},{id:"rice",slug:"rice",name:"ข้าวสาร",sort_order:2,active:true},{id:"noodle",slug:"noodle",name:"มาม่า",sort_order:3,active:true},{id:"other",slug:"other",name:"อื่นๆ",sort_order:4,active:true}];
   const clone = x => JSON.parse(JSON.stringify(x));
   let seedCache = null;
 
@@ -40,6 +42,7 @@ window.MeeSookStore = (() => {
       if (!localStorage.getItem(KEYS[k])) localStorage.setItem(KEYS[k], JSON.stringify(s[k]));
     }
     if (!localStorage.getItem(KEYS.cms)) localStorage.setItem(KEYS.cms, JSON.stringify(s.cms));
+    if (!localStorage.getItem(KEYS.categories)) localStorage.setItem(KEYS.categories, JSON.stringify(s.categories||defaultCategories));
   }
 
   async function sbFetch(path, options={}) {
@@ -188,15 +191,16 @@ window.MeeSookStore = (() => {
   }
 
   async function getSnapshot() {
-    const [products,variants,customers,orders,order_items,cms] = await Promise.all([
+    const [products,variants,customers,orders,order_items,cms,categories] = await Promise.all([
       list("products","select=*&order=sort_order.asc"),
       list("variants"),
       list("customers","select=*&order=created_at.desc"),
       list("orders","select=*&order=created_at.desc"),
       list("order_items"),
-      getCms()
+      getCms(),
+      list("categories","select=*&active=eq.true&order=sort_order.asc,name.asc")
     ]);
-    return {products,variants,customers,orders,order_items,cms};
+    return {products,variants,customers,orders,order_items,cms,categories};
   }
 
   return {

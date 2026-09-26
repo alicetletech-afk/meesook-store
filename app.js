@@ -1,4 +1,4 @@
-let snap, products=[], variants=[], cms={}, cart={}, selectedCat="all", pending=null;
+let snap, products=[], variants=[], categories=[], cms={}, cart={}, selectedCat="all", pending=null;
 const $=id=>document.getElementById(id), money=n=>`฿${Number(n).toLocaleString("th-TH")}`;
 function clearCheckoutErrors(){
   $("checkoutError").classList.add("hidden");
@@ -27,12 +27,20 @@ async function boot(){
   products=snap.products.filter(x=>x.active!==false);
   variants=snap.variants.filter(x=>x.active!==false);
   cms=snap.cms||{};
+  categories=(snap.categories||[]).filter(x=>x.active!==false);
   $("heroTitle").innerHTML=(cms.hero_title||"ของกิน ของใช้ ส่งถึงง่ายๆ").replace("ส่งถึง","<br>ส่งถึง");
   $("heroDelivery").textContent=cms.delivery_copy||"ส่งฟรีที่ล็อบบี้ IDEO MOBI EASTGATE / พื้นที่ใกล้เคียง";
   $("helpTitle").textContent=cms.help_title||"ไม่พบสินค้าที่หาอยู่?";
   $("helpBody").textContent=cms.help_body||"สอบถามสินค้าอื่น เช็กสต๊อก หรือพื้นที่จัดส่งเพิ่มเติมได้เลย";
   ["lineTop","heroLine","helpLine"].forEach(id=>$(id).href=cms.line_url||"https://line.me/R/ti/p/@435ktnsf");
-  render(); totals();
+  renderCategories(); render(); totals();
+}
+function renderCategories(){
+  const nav=$("categoryNav");
+  if(!nav)return;
+  const items=[{slug:"all",name:"ทั้งหมด"},...categories];
+  if(!items.some(x=>x.slug===selectedCat))selectedCat="all";
+  nav.innerHTML=items.map(x=>`<button class="${x.slug===selectedCat?"active":""}" data-cat="${x.slug}">${x.name}</button>`).join("");
 }
 const getVariants=pid=>variants.filter(v=>v.product_id===pid);
 const imageForVariant=(p,v)=>v?.image_url||p?.image_url||'';
@@ -104,7 +112,7 @@ function openOption(pid,buy=false){
 function calcOpt(){const v=variants.find(x=>x.id===pending.variant_id);$("optTotal").textContent=money(+v.price*pending.qty)}
 
 document.addEventListener("click",e=>{
-  const c=e.target.closest("[data-cat]");if(c){selectedCat=c.dataset.cat;document.querySelectorAll("[data-cat]").forEach(x=>x.classList.toggle("active",x===c));render();return}
+  const c=e.target.closest("[data-cat]");if(c){selectedCat=c.dataset.cat;renderCategories();render();return}
   const a=e.target.closest("[data-add]");if(a){const vs=getVariants(a.dataset.add).filter(v=>+v.stock>0);if(vs.length>1)openOption(a.dataset.add,false);else if(vs[0])addVariant(vs[0].id);return}
   const b=e.target.closest("[data-buy]");
   if(b){

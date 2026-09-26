@@ -4,6 +4,16 @@
 
 create extension if not exists pgcrypto;
 
+create table if not exists public.categories (
+  id uuid primary key default gen_random_uuid(),
+  slug text not null unique,
+  name text not null,
+  sort_order integer not null default 0,
+  active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.products (
   id uuid primary key default gen_random_uuid(),
   legacy_id text unique,
@@ -34,6 +44,10 @@ create table if not exists public.variants (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
+
+insert into public.categories(slug,name,sort_order) values
+  ('water','น้ำดื่ม',1),('rice','ข้าวสาร',2),('noodle','มาม่า',3),('other','อื่นๆ',4)
+on conflict (slug) do nothing;
 
 create table if not exists public.customers (
   id uuid primary key default gen_random_uuid(),
@@ -250,6 +264,7 @@ on conflict (key) do nothing;
 
 -- RLS
 alter table public.products enable row level security;
+alter table public.categories enable row level security;
 alter table public.variants enable row level security;
 alter table public.customers enable row level security;
 alter table public.orders enable row level security;
@@ -265,6 +280,8 @@ create policy "admins read own record" on public.admin_users
   using (user_id = (select auth.uid()));
 
 -- Public storefront can READ active catalog + CMS.
+drop policy if exists "public read categories" on public.categories;
+create policy "public read categories" on public.categories for select using (active = true);
 drop policy if exists "public read products" on public.products;
 create policy "public read products" on public.products for select using (active = true);
 drop policy if exists "public read variants" on public.variants;
@@ -273,6 +290,10 @@ drop policy if exists "public read cms" on public.cms_settings;
 create policy "public read cms" on public.cms_settings for select using (true);
 
 -- For production, use authenticated admin users for direct CRUD.
+drop policy if exists "authenticated manage categories" on public.categories;
+create policy "authenticated manage categories" on public.categories for all to authenticated
+  using (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active))
+  with check (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active));
 drop policy if exists "authenticated manage products" on public.products;
 create policy "authenticated manage products" on public.products for all to authenticated
   using (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active))

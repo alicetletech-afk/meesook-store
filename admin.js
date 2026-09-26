@@ -1,4 +1,4 @@
-let snap,products=[],variants=[],customers=[],orders=[],orderItems=[],cms={},pc={};
+let snap,products=[],variants=[],customers=[],orders=[],orderItems=[],categories=[],cms={},pc={};
 let newOrderCart={}, newOrderCustomerMode='existing';
 const $=x=>document.getElementById(x),money=n=>'฿'+Number(n).toLocaleString('th-TH'),st={pending:'รอชำระ',paid:'ชำระแล้ว',ready:'พร้อมส่ง',done:'สำเร็จ',cancelled:'ยกเลิก'},ct={water:'น้ำดื่ม',rice:'ข้าวสาร',noodle:'มาม่า',other:'อื่นๆ'};
 let confirmResolver=null;
@@ -14,9 +14,11 @@ function closeConfirm(result=false){
   if(confirmResolver){const r=confirmResolver;confirmResolver=null;r(result)}
 }
 
-async function refresh(){snap=await MeeSookStore.getSnapshot();({products,variants,customers,orders,order_items:orderItems,cms}=snap);renderAll()}
+async function refresh(){snap=await MeeSookStore.getSnapshot();({products,variants,customers,orders,order_items:orderItems,categories,cms}=snap);renderAll()}
 function paid(o){return o.payment_status==='paid'||['paid','ready','done'].includes(o.status)}
-function renderAll(){dash();pos();ro();rc();rs();fillCms()}
+function renderAll(){fillCategoryOptions();renderCategoryManager();dash();pos();ro();rc();rs();fillCms()}
+function fillCategoryOptions(){const select=$('pcat');if(!select)return;select.innerHTML=categories.filter(x=>x.active!==false).map(c=>`<option value="${c.slug}">${c.name}</option>`).join('');}
+function renderCategoryManager(){const box=$('categoryList');if(!box)return;box.innerHTML=categories.map(c=>`<div class="category-row"><span><b>${c.name}</b><small>${c.slug} · ลำดับ ${c.sort_order||0}</small></span><span class="category-actions"><button type="button" data-editcategory="${c.id}">แก้ไข</button><button type="button" class="danger" data-delcategory="${c.id}">ลบ</button></span></div>`).join('')||'<div class="row">ยังไม่มีประเภทสินค้า</div>';}
 function dash(){let t=new Date().toDateString(),today=orders.filter(x=>new Date(x.created_at).toDateString()===t);$('sales').textContent=money(today.filter(paid).reduce((s,x)=>s+(+x.total||0),0));$('oc').textContent=today.length;$('cc').textContent=customers.length;$('low').textContent=variants.filter(x=>+x.stock<=5).length;$('recent').innerHTML=[...orders].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).slice(0,5).map(x=>`<div class=row><span><b>${x.order_no}</b> · ${x.customer_name||'-'} / ${x.room||'-'}<br><small>${x.channel||'-'} · ${x.payment_method||'-'}</small></span><span><b>${money(x.total)}</b> <i class="tag ${x.status}">${st[x.status]}</i></span></div>`).join('')||'<div class=row>ยังไม่มีออเดอร์</div>';$('lowlist').innerHTML=variants.filter(x=>+x.stock<=5).map(v=>{let p=products.find(x=>x.id===v.product_id);return `<div class=row><span><b>${p?.name||'-'}</b><br><small>${v.label} · ${v.sku||''}</small></span><i class=tag>เหลือ ${v.stock}</i></div>`}).join('')||'<div class=row>สต๊อกยังโอเค</div>';drawSalesChart();drawStatusChart()}
 function drawSalesChart(){let c=$('salesChart'),ctx=c.getContext('2d'),W=c.width,H=c.height,pad=42;ctx.clearRect(0,0,W,H);let days=[];for(let i=6;i>=0;i--){let d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-i);let key=d.toDateString(),sum=orders.filter(o=>new Date(o.created_at).toDateString()===key&&paid(o)).reduce((s,o)=>s+(+o.total||0),0);days.push({d,label:d.toLocaleDateString('th-TH',{day:'numeric',month:'short'}),sum})}let max=Math.max(100,...days.map(x=>x.sum));ctx.strokeStyle='#ddd4c2';ctx.lineWidth=1;for(let i=0;i<5;i++){let y=pad+(H-pad*2)*(i/4);ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke()}ctx.strokeStyle='#3f7a62';ctx.lineWidth=3;ctx.beginPath();days.forEach((x,i)=>{let px=pad+(W-pad*2)*(i/(days.length-1)),py=H-pad-(H-pad*2)*(x.sum/max);if(i===0)ctx.moveTo(px,py);else ctx.lineTo(px,py)});ctx.stroke();ctx.fillStyle='#3f7a62';days.forEach((x,i)=>{let px=pad+(W-pad*2)*(i/(days.length-1)),py=H-pad-(H-pad*2)*(x.sum/max);ctx.beginPath();ctx.arc(px,py,4,0,Math.PI*2);ctx.fill()});ctx.fillStyle='#7c867e';ctx.font='12px sans-serif';ctx.textAlign='center';days.forEach((x,i)=>{let px=pad+(W-pad*2)*(i/(days.length-1));ctx.fillText(x.label,px,H-13)});}
 function drawStatusChart(){let c=$('statusChart'),ctx=c.getContext('2d'),W=c.width,H=c.height,counts=Object.keys(st).map(k=>({k,label:st[k],n:orders.filter(o=>o.status===k).length})),total=Math.max(1,counts.reduce((s,x)=>s+x.n,0)),cx=W*.36,cy=H*.48,r=78,start=-Math.PI/2,colors=['#f2cd58','#4b8a6c','#6680a0','#7aa087','#c96a64'];ctx.clearRect(0,0,W,H);counts.forEach((x,i)=>{let a=(x.n/total)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,start+a);ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();start+=a});ctx.beginPath();ctx.arc(cx,cy,r*.56,0,Math.PI*2);ctx.fillStyle='#fffdf8';ctx.fill();ctx.fillStyle='#303a34';ctx.font='bold 24px sans-serif';ctx.textAlign='center';ctx.fillText(total,cx,cy+7);ctx.textAlign='left';ctx.font='12px sans-serif';counts.forEach((x,i)=>{let y=45+i*34;ctx.fillStyle=colors[i];ctx.fillRect(W*.66,y-9,12,12);ctx.fillStyle='#303a34';ctx.fillText(`${x.label} ${x.n}`,W*.66+20,y)})}
@@ -74,6 +76,10 @@ function updateProductSelectionState(){
   if(button){button.disabled=!selected.length;button.textContent=selected.length?`ลบที่เลือก (${selected.length})`:'ลบที่เลือก'}
 }
 function fillCms(){$('hero').value=cms.hero_title||'';$('delivery').value=cms.delivery_copy||'';$('help').value=cms.help_title||'';$('helpBody').value=cms.help_body||'';$('phero').textContent=cms.hero_title||'';$('pdelivery').textContent=cms.delivery_copy||''}
+function openCategoryEditor(id=null){const c=id?categories.find(x=>x.id===id):null;$('categoryId').value=c?.id||'';$('categoryName').value=c?.name||'';$('categorySlug').value=c?.slug||'';$('categorySort').value=c?.sort_order??(categories.length+1);$('categoryModalTitle').textContent=c?'แก้ไขประเภทสินค้า':'เพิ่มประเภทสินค้า';$('categoryModal').classList.remove('hidden')}
+$('addCategoryBtn').onclick=()=>openCategoryEditor();
+$('categoryForm').onsubmit=async e=>{e.preventDefault();const id=$('categoryId').value||crypto.randomUUID(),old=categories.find(x=>x.id===id),name=$('categoryName').value.trim(),slug=$('categorySlug').value.trim().toLowerCase().replace(/[^a-z0-9-]+/g,'-').replace(/^-+|-+$/g,'');if(!name||!slug){showToast('กรอกชื่อและรหัสประเภทเป็นภาษาอังกฤษให้ครบ');return}if(categories.some(x=>x.slug===slug&&x.id!==id)){showToast('รหัสประเภทนี้มีอยู่แล้ว');return}if(old&&old.slug!==slug){for(const p of products.filter(x=>x.category===old.slug))await MeeSookStore.upsert('products',{...p,category:slug})}await MeeSookStore.upsert('categories',{...(old||{}),id,name,slug,sort_order:+$('categorySort').value||0,active:true});$('categoryModal').classList.add('hidden');await refresh();showToast(old?'แก้ไขประเภทสินค้าแล้ว':'เพิ่มประเภทสินค้าแล้ว')};
+document.addEventListener('click',async e=>{const edit=e.target.closest('[data-editcategory]');if(edit){openCategoryEditor(edit.dataset.editcategory);return}const del=e.target.closest('[data-delcategory]');if(!del)return;const c=categories.find(x=>x.id===del.dataset.delcategory);const used=products.filter(p=>p.category===c.slug).length;if(used){showToast(`ลบไม่ได้ มีสินค้า ${used} รายการใช้ประเภทนี้อยู่`);return}if(await openConfirm({title:'ลบประเภทสินค้า?',text:`ประเภท ${c.name} จะถูกลบออกจากเมนู`,okText:'ลบประเภท'})){await MeeSookStore.remove('categories',c.id);await refresh();showToast('ลบประเภทสินค้าแล้ว')}});
 
 
 function openCustomerEditor(id){
@@ -416,7 +422,7 @@ function openProduct(pid=null){
 
   $('peid').value=p.id;
   $('pname').value=p.name||'';
-  $('pcat').value=p.category||'other';
+  $('pcat').value=p.category||categories[0]?.slug||'other';
   $('pdesc').value=p.description||'';
   $('psort').value=p.sort_order??0;
   $('pactive').checked=p.active!==false;
