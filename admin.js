@@ -468,7 +468,22 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&!$('confirmModal').classList.contains('hidden')) closeConfirm(false);
 });
 
-refresh().catch(err=>{
-  console.error(err);
-  showToast('โหลดข้อมูลไม่สำเร็จ');
-});
+async function startAdmin(){
+  const gate=$('authGate'), form=$('loginForm'), error=$('loginError');
+  const showError=message=>{error.textContent=message;error.classList.remove('hidden')};
+  if(!window.MeeSookAuth?.ready()) { showError('ยังไม่ได้ตั้งค่า Supabase ใน supabase-config.js'); return; }
+  const session=await window.MeeSookAuth.session();
+  if(!session){ gate.classList.remove('hidden'); }
+  else {
+    gate.classList.add('hidden'); $('adminEmail').textContent=session.user.email||'';
+    try { await refresh(); }
+    catch(err){ console.error(err); showError('บัญชีนี้ยังไม่มีสิทธิ์ผู้ดูแล หรือโหลดข้อมูลไม่สำเร็จ'); gate.classList.remove('hidden'); }
+  }
+  form.onsubmit=async e=>{
+    e.preventDefault(); error.classList.add('hidden');
+    try { await window.MeeSookAuth.signIn($('loginEmail').value.trim(),$('loginPassword').value); location.reload(); }
+    catch(err){ showError(err.message||'อีเมลหรือรหัสผ่านไม่ถูกต้อง'); }
+  };
+  $('logoutBtn').onclick=async()=>{await window.MeeSookAuth.signOut();location.reload()};
+}
+startAdmin().catch(err=>{ console.error(err); $('loginError').textContent='เกิดข้อผิดพลาดในการเริ่มระบบ'; $('loginError').classList.remove('hidden'); });

@@ -33,10 +33,11 @@ window.MeeSookStore = (() => {
 
   async function sbFetch(path, options={}) {
     const cfg = window.MEESOOK_SUPABASE;
+    const session = await window.MeeSookAuth?.session?.();
     const url = `${cfg.url}/rest/v1/${path}`;
     const headers = {
       "apikey": cfg.anonKey,
-      "Authorization": `Bearer ${cfg.anonKey}`,
+      "Authorization": `Bearer ${session?.access_token || cfg.anonKey}`,
       "Content-Type": "application/json",
       "Prefer": options.prefer || "return=representation",
       ...(options.headers||{})
@@ -117,11 +118,12 @@ window.MeeSookStore = (() => {
     if (supabaseReady()) {
       // Production path: atomic SQL function created by schema.sql
       const cfg = window.MEESOOK_SUPABASE;
+      const session = await window.MeeSookAuth?.session?.();
       const res = await fetch(`${cfg.url}/rest/v1/rpc/create_store_order`, {
         method:"POST",
         headers:{
           "apikey":cfg.anonKey,
-          "Authorization":`Bearer ${cfg.anonKey}`,
+          "Authorization":`Bearer ${session?.access_token || cfg.anonKey}`,
           "Content-Type":"application/json"
         },
         body:JSON.stringify({p_order:order,p_items:items})

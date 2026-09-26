@@ -3,7 +3,7 @@
       <span class="storefront-icon">↗</span>
       <span><small>STOREFRONT</small><b>เปิดหน้าร้าน</b></span>
     </a></aside>
-<main><header><div><small>ADMIN</small><h1 id="title">ภาพรวมวันนี้</h1></div><span class="online">● ระบบพร้อมขาย</span></header>
+<main><header><div><small>ADMIN</small><h1 id="title">ภาพรวมวันนี้</h1></div><div class="admin-session"><span class="online">● ระบบพร้อมขาย</span><span id="adminEmail"></span><button id="logoutBtn" class="ghost-btn">ออกจากระบบ</button></div></header>
 <section id="dash" class="view active"><div class="metrics"><article><span>ยอดขายวันนี้</span><b id="sales">฿0</b><small>ชำระแล้ว</small></article><article><span>ออเดอร์วันนี้</span><b id="oc">0</b><small>ทุกช่องทาง</small></article><article><span>ลูกค้าทั้งหมด</span><b id="cc">0</b><small>จากฐานเดียวกับหน้าร้าน</small></article><article><span>สินค้าใกล้หมด</span><b id="low">0</b><small>variant เหลือ ≤ 5</small></article></div><div class="chart-grid"><div class="panel"><div class="ph"><h2>ยอดขาย 7 วันล่าสุด</h2><small>SALES TREND</small></div><canvas id="salesChart" width="700" height="260"></canvas></div><div class="panel"><div class="ph"><h2>สถานะออเดอร์</h2><small>ORDER STATUS</small></div><canvas id="statusChart" width="380" height="260"></canvas></div></div><div class="cols"><div class="panel"><h2>ออเดอร์ล่าสุด</h2><div id="recent"></div></div><div class="panel"><h2>ต้องเติมสต๊อก</h2><div id="lowlist"></div></div></div></section>
 <section id="pos" class="view"><div class="pos"><div class="panel"><div class="ph"><h2>เลือกสินค้า</h2><input id="search" placeholder="ค้นหา"></div><div id="catalog" class="catalog"></div></div><div class="panel cart"><h2>รายการขาย</h2><div id="cart"></div><div class="total"><span>ยอดรวม</span><b id="total">฿0</b></div><div class="two"><label>ชื่อลูกค้า<input id="customer" placeholder="ชื่อลูกค้า"></label><label>เลขห้อง<input id="posRoom" placeholder="เช่น A1208"></label></div><label>เบอร์โทร<input id="posPhone" placeholder="08x-xxx-xxxx"></label><label>ชำระ<select id="payment"><option>โอนเงิน</option><option>เงินสด</option></select></label><button class="primary" id="checkout">บันทึกการขาย</button></div></div></section>
 <section id="orders" class="view"><div class="panel"><div class="ph"><h2>จัดการออเดอร์</h2><div class="toolbar"><button id="addOrderBtn">+ เพิ่มออเดอร์</button><select id="filter"><option value="all">ทั้งหมด</option><option value="pending">รอชำระ</option><option value="paid">ชำระแล้ว</option><option value="ready">พร้อมส่ง</option><option value="done">สำเร็จ</option><option value="cancelled">ยกเลิก</option></select></div></div><div id="ordertable" class="table"></div></div></section>
@@ -216,4 +216,15 @@
   </section>
 </div>
 <div id="toast" class="toast hidden"><span id="toastText"></span></div>
-<script src="supabase-config.js"></script><script src="store.js"></script><script src="admin.js"></script></body></html>
+<div id="authGate" class="auth-gate">
+  <form id="loginForm" class="auth-card">
+    <small>MEE SOOK ADMIN</small>
+    <h1>เข้าสู่ระบบหลังบ้าน</h1>
+    <p>ใช้บัญชีผู้ดูแลที่สร้างไว้ใน Supabase Auth</p>
+    <label>อีเมล<input id="loginEmail" type="email" autocomplete="email" required></label>
+    <label>รหัสผ่าน<input id="loginPassword" type="password" autocomplete="current-password" minlength="6" required></label>
+    <div id="loginError" class="auth-error hidden"></div>
+    <button class="primary" type="submit">เข้าสู่ระบบ</button>
+  </form>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script><script src="supabase-config.js"></script><script src="store.js"></script><script src="admin.js"></script></body></html>

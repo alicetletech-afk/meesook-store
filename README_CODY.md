@@ -62,6 +62,19 @@ window.MEESOOK_SUPABASE = {
 };
 ```
 
+### เปิดใช้งานล็อกอินหลังบ้าน
+1. ไปที่ Supabase > Authentication > Users แล้วกด `Add user` เพื่อสร้างอีเมลและรหัสผ่านของแอดมิน
+2. คัดลอก UUID ของผู้ใช้ แล้วรัน SQL นี้ใน SQL Editor:
+
+```sql
+insert into public.admin_users (user_id)
+values ('ใส่-UUID-ของผู้ใช้ที่สร้างไว้');
+```
+
+3. เปิด `admin.html` แล้วเข้าสู่ระบบด้วยบัญชีดังกล่าว
+
+หลังจากเชื่อม Supabase แล้ว หน้าร้านยังเปิดดูสินค้าและส่งออเดอร์ได้ตามปกติ ส่วนข้อมูลลูกค้า ออเดอร์ สต๊อก และ CMS จะอ่าน/แก้ได้เฉพาะผู้ใช้ที่อยู่ใน `admin_users` เท่านั้น
+
 ## Data Model
 - products
 - variants

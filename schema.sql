@@ -101,6 +101,14 @@ create table if not exists public.cms_settings (
   updated_at timestamptz not null default now()
 );
 
+-- Only users listed here can access the admin dashboard and mutate store data.
+-- Create the Auth user first, then insert its UUID here from the Supabase dashboard.
+create table if not exists public.admin_users (
+  user_id uuid primary key references auth.users(id) on delete cascade,
+  active boolean not null default true,
+  created_at timestamptz not null default now()
+);
+
 create sequence if not exists public.order_no_seq start 1;
 
 create or replace function public.set_order_no()
@@ -232,6 +240,12 @@ alter table public.order_items enable row level security;
 alter table public.payments enable row level security;
 alter table public.inventory_movements enable row level security;
 alter table public.cms_settings enable row level security;
+alter table public.admin_users enable row level security;
+
+drop policy if exists "admins read own record" on public.admin_users;
+create policy "admins read own record" on public.admin_users
+  for select to authenticated
+  using (user_id = (select auth.uid()));
 
 -- Public storefront can READ active catalog + CMS.
 drop policy if exists "public read products" on public.products;
@@ -243,21 +257,37 @@ create policy "public read cms" on public.cms_settings for select using (true);
 
 -- For production, use authenticated admin users for direct CRUD.
 drop policy if exists "authenticated manage products" on public.products;
-create policy "authenticated manage products" on public.products for all to authenticated using (true) with check (true);
+create policy "authenticated manage products" on public.products for all to authenticated
+  using (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active))
+  with check (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active));
 drop policy if exists "authenticated manage variants" on public.variants;
-create policy "authenticated manage variants" on public.variants for all to authenticated using (true) with check (true);
+create policy "authenticated manage variants" on public.variants for all to authenticated
+  using (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active))
+  with check (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active));
 drop policy if exists "authenticated manage customers" on public.customers;
-create policy "authenticated manage customers" on public.customers for all to authenticated using (true) with check (true);
+create policy "authenticated manage customers" on public.customers for all to authenticated
+  using (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active))
+  with check (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active));
 drop policy if exists "authenticated manage orders" on public.orders;
-create policy "authenticated manage orders" on public.orders for all to authenticated using (true) with check (true);
+create policy "authenticated manage orders" on public.orders for all to authenticated
+  using (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active))
+  with check (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active));
 drop policy if exists "authenticated manage order items" on public.order_items;
-create policy "authenticated manage order items" on public.order_items for all to authenticated using (true) with check (true);
+create policy "authenticated manage order items" on public.order_items for all to authenticated
+  using (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active))
+  with check (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active));
 drop policy if exists "authenticated manage payments" on public.payments;
-create policy "authenticated manage payments" on public.payments for all to authenticated using (true) with check (true);
+create policy "authenticated manage payments" on public.payments for all to authenticated
+  using (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active))
+  with check (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active));
 drop policy if exists "authenticated manage inventory" on public.inventory_movements;
-create policy "authenticated manage inventory" on public.inventory_movements for all to authenticated using (true) with check (true);
+create policy "authenticated manage inventory" on public.inventory_movements for all to authenticated
+  using (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active))
+  with check (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active));
 drop policy if exists "authenticated manage cms" on public.cms_settings;
-create policy "authenticated manage cms" on public.cms_settings for all to authenticated using (true) with check (true);
+create policy "authenticated manage cms" on public.cms_settings for all to authenticated
+  using (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active))
+  with check (exists (select 1 from public.admin_users where user_id=(select auth.uid()) and active));
 
 grant execute on function public.create_store_order(jsonb,jsonb) to anon, authenticated;
 grant execute on function public.restore_order_stock(uuid) to authenticated;
