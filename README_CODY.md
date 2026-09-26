@@ -160,3 +160,8 @@ window.MEESOOK_SUPABASE = {
 - field ที่ขาดจะมี red border
 - focus ไปช่องแรกที่ต้องกรอก
 - พอผู้ใช้กรอกครบ error จะหายเอง
+
+
+## v9 POS form tweak
+- แยก `ชื่อลูกค้า` และ `เลขห้อง` ออกจากกันในหน้า POS
+- เวลา save order ผ่าน POS จะบันทึก name/room เข้า customer และ order ให้ตรงกัน

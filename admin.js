@@ -31,12 +31,13 @@ $('checkout').onclick=async()=>{
   let items=Object.values(pc);
   if(!items.length){showToast('ยังไม่มีสินค้าในรายการขาย');return}
   let name=$('customer').value.trim()||'ลูกค้าหน้าร้าน';
+  let room=$('posRoom').value.trim();
   let phone=$('posPhone').value.trim();
-  let customer=await MeeSookStore.createCustomer({name,room:'',phone});
+  let customer=await MeeSookStore.createCustomer({name,room,phone});
   let total=items.reduce((s,x)=>s+x.price*x.qty,0);
   await MeeSookStore.createOrder({
     order:{
-      customer_id:customer.id,customer_name:name,room:'',phone,
+      customer_id:customer.id,customer_name:name,room,phone,
       pickup_time:'',delivery_type:'counter',delivery_location:'หน้าร้าน',note:'',
       subtotal:total,total,status:'paid',payment_status:'paid',
       payment_method:$('payment').value,channel:'POS'
@@ -48,6 +49,7 @@ $('checkout').onclick=async()=>{
   });
   pc={};
   $('customer').value='';
+  $('posRoom').value='';
   $('posPhone').value='';
   await refresh();
   showToast('บันทึกการขายแล้ว');
