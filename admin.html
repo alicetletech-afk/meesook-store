@@ -104,14 +104,39 @@
         <span>ราคา</span>
         <span>สต๊อก</span>
         <span>SKU</span>
-        <span>รูป SKU (URL)</span>
-        <span>ไฟล์รูป</span>
-        <span>ซูม</span>
-        <span>ตำแหน่ง</span>
         <span></span>
       </div>
 
       <div id="variantEditor"></div>
+
+      <div class="variant-image-adjust" id="variantImageAdjust">
+        <div class="variant-image-adjust-head">
+          <div><small>SELECTED SKU IMAGE</small><h4 id="variantImageAdjustTitle">เลือก SKU เพื่อปรับรูป</h4></div>
+          <select id="variantImageSelect" aria-label="เลือก SKU เพื่อปรับรูป"></select>
+        </div>
+        <div class="variant-image-adjust-grid">
+          <div class="variant-adjust-preview" id="variantImagePreview"><span>ยังไม่มีรูป SKU</span></div>
+          <div>
+            <label>ไฟล์รูป SKU
+              <input type="file" id="variantImageFile" accept="image/*">
+            </label>
+            <label>หรือ Image URL
+              <input id="variantImageUrl" placeholder="https://...">
+            </label>
+            <div class="image-adjust-row">
+              <label>ซูมรูป SKU
+                <input id="variantImageScale" type="range" min="0.7" max="2" step="0.05" value="1">
+              </label>
+              <label>ตำแหน่งรูป
+                <select id="variantImagePosition">
+                  <option value="center">กลาง</option><option value="top">บน</option><option value="bottom">ล่าง</option><option value="left">ซ้าย</option><option value="right">ขวา</option>
+                </select>
+              </label>
+            </div>
+          </div>
+        </div>
+        <p class="helper-text">เลือก SKU ด้านบน แล้วปรับรูปของ SKU นั้นได้แยกจากตัวอื่น</p>
+      </div>
     </div>
 
     <div class="product-form-actions">

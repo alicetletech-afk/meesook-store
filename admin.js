@@ -326,26 +326,58 @@ function openOrder(id){let o=orders.find(x=>x.id===id);$('oeid').value=o.id;$('o
 $('orderForm').onsubmit=async e=>{e.preventDefault();await MeeSookStore.updateOrder($('oeid').value,{customer_name:$('oname').value,room:$('oroom').value,phone:$('ophone').value,pickup_time:$('otime').value,status:$('ostatus').value,payment_status:['paid','ready','done'].includes($('ostatus').value)?'paid':'pending',delivery_location:$('olocation').value,note:$('onote').value});$('orderModal').classList.add('hidden');await refresh()};
 let productImageData="";
 let productImageFile=null;
+let variantImageFiles={};
 function variantRow(v={}){
   const id=v.id||crypto.randomUUID();
-  const position=v.image_position||'center';
   return `<div class="variant-edit" data-vid="${id}">
     <input data-f="label" placeholder="เช่น ขวด / แพ็ค" value="${v.label||''}" required>
     <input data-f="price" type="number" min="0" step="0.01" placeholder="ราคา" value="${v.price??''}" required>
     <input data-f="stock" type="number" min="0" placeholder="สต๊อก" value="${v.stock??0}" required>
     <input data-f="sku" placeholder="SKU" value="${v.sku||''}">
-    <input data-f="image_url" placeholder="URL รูป SKU" value="${v.image_url||''}">
-    <input data-image-file type="file" accept="image/*" aria-label="รูปของ ${v.label||'ตัวเลือกสินค้า'}">
-    <input data-f="image_scale" type="range" min="0.7" max="2" step="0.05" value="${v.image_scale||1}" aria-label="ซูมรูป ${v.label||'ตัวเลือกสินค้า'}">
-    <select data-f="image_position" aria-label="ตำแหน่งรูป ${v.label||'ตัวเลือกสินค้า'}">
-      <option value="center" ${position==='center'?'selected':''}>กลาง</option>
-      <option value="top" ${position==='top'?'selected':''}>บน</option>
-      <option value="bottom" ${position==='bottom'?'selected':''}>ล่าง</option>
-      <option value="left" ${position==='left'?'selected':''}>ซ้าย</option>
-      <option value="right" ${position==='right'?'selected':''}>ขวา</option>
-    </select>
+    <input data-f="image_url" type="hidden" value="${v.image_url||''}">
+    <input data-f="image_scale" type="hidden" value="${v.image_scale||1}">
+    <input data-f="image_position" type="hidden" value="${v.image_position||'center'}">
     <button type="button" class="variant-remove" data-removevariant="${id}">×</button>
   </div>`;
+}
+
+function variantRows(){return [...document.querySelectorAll('.variant-edit')];}
+function selectedVariantRow(){return document.querySelector(`.variant-edit[data-vid="${$('variantImageSelect')?.value}"]`)}
+function imageOrigin(position){return {center:'50% 50%',top:'50% 0%',bottom:'50% 100%',left:'0% 50%',right:'100% 50%'}[position]||'50% 50%'}
+function updateVariantImagePreview(src){
+  const preview=$('variantImagePreview');
+  if(!preview)return;
+  preview.innerHTML=src?`<img src="${src}" alt="variant preview">`:`<span>ยังไม่มีรูป SKU</span>`;
+  const img=preview.querySelector('img');
+  if(img){img.style.transform=`scale(${$('variantImageScale')?.value||1})`;img.style.objectPosition=$('variantImagePosition')?.value||'center';img.style.transformOrigin=imageOrigin($('variantImagePosition')?.value||'center')}
+}
+function refreshVariantImageOptions(selectedId){
+  const select=$('variantImageSelect');
+  if(!select)return;
+  const rows=variantRows();
+  select.innerHTML=rows.map((row,i)=>{const fields=[...row.querySelectorAll('[data-f]')].reduce((o,x)=>(o[x.dataset.f]=x.value,o),{});return `<option value="${row.dataset.vid}">${fields.label||`ตัวเลือกที่ ${i+1}`}${fields.sku?` · ${fields.sku}`:''}</option>`}).join('');
+  select.value=rows.some(x=>x.dataset.vid===selectedId)?selectedId:(rows[0]?.dataset.vid||'');
+  loadVariantImageAdjust();
+}
+function loadVariantImageAdjust(){
+  const row=selectedVariantRow();
+  if(!row){$('variantImageAdjust').classList.add('hidden');return}
+  $('variantImageAdjust').classList.remove('hidden');
+  const fields=[...row.querySelectorAll('[data-f]')].reduce((o,x)=>(o[x.dataset.f]=x.value,o),{});
+  $('variantImageAdjustTitle').textContent=fields.label||'เลือก SKU เพื่อปรับรูป';
+  $('variantImageUrl').value=fields.image_url||'';
+  $('variantImageScale').value=fields.image_scale||1;
+  $('variantImagePosition').value=fields.image_position||'center';
+  $('variantImageFile').value='';
+  updateVariantImagePreview(fields.image_url||'');
+}
+function syncSelectedVariantImage(){
+  const row=selectedVariantRow();
+  if(!row)return;
+  row.querySelector('[data-f="image_url"]').value=$('variantImageUrl').value.trim();
+  row.querySelector('[data-f="image_scale"]').value=$('variantImageScale').value||1;
+  row.querySelector('[data-f="image_position"]').value=$('variantImagePosition').value||'center';
+  updateVariantImagePreview($('variantImageUrl').value.trim());
 }
 
 function updateProductImagePreview(){
@@ -392,10 +424,12 @@ function openProduct(pid=null){
   $('pimagePosition').value=p.image_position||'center';
   $('pimageFile').value='';
   productImageFile=null;
+  variantImageFiles={};
   renderProductImagePreview(p.image_url||'');
 
   const vs=isNew ? [] : variants.filter(x=>x.product_id===pid);
   $('variantEditor').innerHTML=(vs.length?vs:[{id:crypto.randomUUID(),label:'',price:'',stock:0,sku:'',image_url:'',image_scale:1,image_position:'center'}]).map(variantRow).join('');
+  refreshVariantImageOptions();
 
   $('productModalTitle').textContent=isNew?'เพิ่มสินค้า':'แก้ไขสินค้า';
   $('deleteProductBtn').classList.toggle('hidden',isNew);
@@ -405,6 +439,16 @@ function openProduct(pid=null){
 $('addp').onclick=()=>openProduct();
 $('pimageScale').oninput=updateProductImagePreview;
 $('pimagePosition').onchange=updateProductImagePreview;
+$('variantImageSelect').onchange=loadVariantImageAdjust;
+$('variantImageScale').oninput=syncSelectedVariantImage;
+$('variantImagePosition').onchange=syncSelectedVariantImage;
+$('variantImageUrl').oninput=syncSelectedVariantImage;
+$('variantImageFile').onchange=e=>{
+  const row=selectedVariantRow();const file=e.target.files?.[0];
+  if(!row||!file)return;
+  variantImageFiles[row.dataset.vid]=file;
+  updateVariantImagePreview(URL.createObjectURL(file));
+};
 
 const importHeader=(value)=>String(value||'').trim().toLowerCase().replace(/[\s_\-()/]+/g,'');
 const importAliases={name:['ชื่อสินค้า','สินค้า','product','productname','name'],label:['ตัวเลือก','ตัวเลือกสินค้า','variant','variantlabel','label','option'],price:['ราคา','price'],stock:['สต๊อก','stock','จำนวน'],sku:['sku','รหัสsku'],category:['หมวด','หมวดหมู่','category'],description:['รายละเอียด','description'],legacy_id:['รหัสสินค้า','รหัสสินค้าเดิม','productid','legacyid'],image_url:['รูปภาพ','รูป','image','imageurl','image_url'],variant_image_url:['รูป SKU','รูปตัวเลือก','variantimage','variant_image_url'],active:['เปิดขาย','active']};
@@ -455,7 +499,9 @@ $('downloadImportTemplate').onclick=downloadImportTemplate;
 $('importProductsFile').onchange=async e=>{const file=e.target.files?.[0];if(file) await importProductsFromExcel(file);e.target.value=''};
 
 $('addVariantBtn').onclick=()=>{
-  $('variantEditor').insertAdjacentHTML('beforeend',variantRow({id:crypto.randomUUID(),label:'',price:'',stock:0,sku:'',image_url:'',image_scale:1,image_position:'center'}));
+  const id=crypto.randomUUID();
+  $('variantEditor').insertAdjacentHTML('beforeend',variantRow({id,label:'',price:'',stock:0,sku:'',image_url:'',image_scale:1,image_position:'center'}));
+  refreshVariantImageOptions(id);
 };
 
 $('variantEditor').onclick=e=>{
@@ -463,7 +509,12 @@ $('variantEditor').onclick=e=>{
   if(!btn) return;
   const rows=[...document.querySelectorAll('.variant-edit')];
   if(rows.length<=1){showToast('สินค้าต้องมีอย่างน้อย 1 ตัวเลือก');return}
+  delete variantImageFiles[btn.closest('.variant-edit').dataset.vid];
   btn.closest('.variant-edit').remove();
+  refreshVariantImageOptions();
+};
+$('variantEditor').oninput=e=>{
+  if(e.target.dataset.f==='label'||e.target.dataset.f==='sku') refreshVariantImageOptions($('variantImageSelect').value);
 };
 
 $('pimageUrl').oninput=()=>{
@@ -526,7 +577,7 @@ $('productForm').onsubmit=async e=>{
 
     const old=variants.find(v=>v.id===vid);
     let variantImageUrl=fields.image_url.trim()||old?.image_url||'';
-    const variantImageFile=row.querySelector('[data-image-file]')?.files?.[0];
+    const variantImageFile=variantImageFiles[vid];
     if(variantImageFile){
       try{variantImageUrl=await uploadProductImage(variantImageFile,`${pid}/${vid}`)}catch(error){showToast(`อัปโหลดรูป ${fields.label} ไม่สำเร็จ: ${error.message}`);return}
     }
