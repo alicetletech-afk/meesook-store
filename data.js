@@ -98,7 +98,7 @@ window.MEESOOK_PRODUCTS = [
     id: "mama",
     name: "มาม่า",
     category: "noodle",
-    subtitle: "ตัวอย่างสินค้า — สามารถเปลี่ยนเป็นข้อมูลจริงภายหลัง",
+    subtitle: "ตัวอย่างสินค้า — เปลี่ยนข้อมูลจริงภายหลังได้",
     stock: 30,
     variants: [
       { id: "piece", label: "ซอง", price: 7 }

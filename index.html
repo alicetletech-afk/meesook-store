@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#FDF6F2">
+  <meta name="theme-color" content="#F7F2E7">
   <title>มีสุขส่งถึง</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,111 +11,90 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="bg-orb orb-1"></div>
-  <div class="bg-orb orb-2"></div>
+  <div class="page-glow glow-1"></div>
+  <div class="page-glow glow-2"></div>
 
-  <main class="app-shell">
-    <aside class="sidebar-card desktop-only">
-      <div class="brand-mini">MEE SOOK SONG THUENG</div>
-      <h1>มีสุขส่งถึง</h1>
-      <p class="sidebar-copy">ของกิน ของใช้ พร้อมส่งแบบสบายตาและใช้งานง่าย ลูกค้าเลือกสินค้าได้เอง แล้วส่งออเดอร์เข้า LINE ได้ทันที</p>
-
-      <div class="side-highlight">
-        <div class="side-badge">DELIVERY</div>
-        <h3>ส่งฟรีที่ล็อบบี้<br>IDEO MOBI EASTGATE</h3>
-        <p>พื้นที่ใกล้เคียงให้สอบถามได้</p>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand-wrap">
+        <div class="brand-mini">MEE SOOK SONG THUENG</div>
+        <h1>มีสุขส่งถึง</h1>
       </div>
 
-      <div class="side-contact">
-        <h4>สอบถามเพิ่มเติม</h4>
-        <p>ไม่พบสินค้าที่หาอยู่ หรืออยากเช็กของก่อนสั่งซื้อ กดแอด LINE ได้เลย</p>
-        <a class="line-cta" href="https://line.me/R/ti/p/@435ktnsf" target="_blank" rel="noopener">แอดไลน์เพื่อสอบถาม</a>
+      <div class="topbar-actions">
+        <a class="line-btn" href="https://line.me/R/ti/p/@435ktnsf" target="_blank" rel="noopener">LINE Official</a>
+
+        <button id="cartFab" class="cart-fab" type="button" aria-label="เปิดตะกร้า">
+          <span class="cart-fab-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM6.2 5l.57 2H21l-1.8 7.15a2 2 0 0 1-1.94 1.52H9.1a2 2 0 0 1-1.95-1.56L4.11 2H1V0h4.63l.57 2.27L6.2 5Z"/></svg>
+          </span>
+          <span class="cart-fab-text">ตะกร้า</span>
+          <span id="cartFabBadge" class="cart-fab-badge hidden">0</span>
+        </button>
       </div>
-    </aside>
+    </header>
 
-    <section class="storefront">
-      <header class="topbar">
-        <div>
-          <div class="brand-mini">MEE SOOK SONG THUENG</div>
-          <h1>มีสุขส่งถึง</h1>
+    <section class="hero">
+      <div class="hero-main">
+        <span class="hero-label">GROCERY DELIVERY</span>
+        <h2>ของกิน ของใช้<br>พร้อมส่งถึงล็อบบี้</h2>
+        <p class="hero-desc">
+          <strong>ส่งฟรีที่ล็อบบี้ IDEO MOBI EASTGATE</strong><br>
+          พื้นที่ใกล้เคียงให้สอบถามได้
+        </p>
+      </div>
+
+      <div class="hero-side">
+        <div class="help-card">
+          <div class="help-kicker">สอบถามเพิ่มเติม</div>
+          <h3>ไม่พบสินค้าที่หาอยู่?</h3>
+          <p>ทัก LINE เพื่อเช็กสินค้า สต๊อก และรายละเอียดการจัดส่งเพิ่มเติมได้เลย</p>
+          <a class="help-btn" href="https://line.me/R/ti/p/@435ktnsf" target="_blank" rel="noopener">แอดไลน์เพื่อสอบถาม</a>
         </div>
-        <a class="line-pill" href="https://line.me/R/ti/p/@435ktnsf" target="_blank" rel="noopener">สอบถามเพิ่มเติม</a>
-      </header>
-
-      <section class="hero">
-        <div class="hero-copy">
-          <span class="hero-tag">MINI GROCERY DELIVERY</span>
-          <h2>ของกิน ของใช้<br>พร้อมส่งถึงล็อบบี้</h2>
-          <p>เลือกสินค้าที่ต้องการ เพิ่มลงตะกร้า หรือกดสั่งซื้อเลยได้ทันที</p>
-
-          <div class="delivery-banner">
-            <strong>ส่งฟรีที่ล็อบบี้ IDEO MOBI EASTGATE</strong>
-            <span>พื้นที่ใกล้เคียงให้สอบถามได้</span>
-          </div>
-        </div>
-
-        <div class="floating-card hero-cta">
-          <div class="cta-kicker">LINE SUPPORT</div>
-          <h3>สอบถามเพิ่มเติม<br>ไม่พบสินค้าที่หา?</h3>
-          <p>ทัก LINE เพื่อสอบถามสินค้า หรือเช็กรายละเอียดเพิ่มเติมได้เลย</p>
-          <a class="soft-btn" href="https://line.me/R/ti/p/@435ktnsf" target="_blank" rel="noopener">แอดไลน์เพื่อสอบถาม</a>
-        </div>
-      </section>
-
-      <section class="controls">
-        <label class="search">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13Zm0 1.8a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4Zm5.9 9.62 3.6 3.58-1.28 1.28-3.58-3.6 1.26-1.26Z"/></svg>
-          <input id="search" placeholder="ค้นหาสินค้า">
-        </label>
-
-        <div class="cats" id="cats">
-          <button class="active" data-cat="all">ทั้งหมด</button>
-          <button data-cat="water">น้ำดื่ม</button>
-          <button data-cat="rice">ข้าวสาร</button>
-          <button data-cat="noodle">บะหมี่กึ่งสำเร็จรูป</button>
-          <button data-cat="other">อื่นๆ</button>
-        </div>
-      </section>
-
-      <section class="section-head">
-        <div>
-          <div class="brand-mini">PRODUCTS</div>
-          <h3>สินค้าแนะนำ</h3>
-        </div>
-        <span id="count" class="product-count"></span>
-      </section>
-
-      <section id="products" class="product-grid"></section>
-
-      <section class="mobile-help mobile-only">
-        <div class="floating-card">
-          <div class="cta-kicker">LINE SUPPORT</div>
-          <h3>สอบถามเพิ่มเติม</h3>
-          <p>ไม่พบสินค้าที่หา หรืออยากเช็กสต๊อกก่อน กดแอดไลน์ได้เลย</p>
-          <a class="soft-btn" href="https://line.me/R/ti/p/@435ktnsf" target="_blank" rel="noopener">แอดไลน์เพื่อสอบถาม</a>
-        </div>
-      </section>
+      </div>
     </section>
-  </main>
 
-  <button id="cartBar" class="cart-bar hidden">
-    <span class="cart-bar-left">
-      <span class="cart-icon-wrap">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM6.2 5l.57 2H21l-1.8 7.15a2 2 0 0 1-1.94 1.52H9.1a2 2 0 0 1-1.95-1.56L4.11 2H1V0h4.63l.57 2.27L6.2 5Z"/></svg>
-      </span>
-      <span><b id="cartCount">0</b> รายการ</span>
-    </span>
-    <span class="cart-bar-right"><strong id="cartTotal">฿0</strong><small>ดูตะกร้า</small></span>
-  </button>
+    <section class="tool-row">
+      <label class="search">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10.5 4a6.5 6.5 0 1 1 0 13 6.5 6.5 0 0 1 0-13Zm0 1.8a4.7 4.7 0 1 0 0 9.4 4.7 4.7 0 0 0 0-9.4Zm5.9 9.62 3.6 3.58-1.28 1.28-3.58-3.6 1.26-1.26Z"/></svg>
+        <input id="search" placeholder="ค้นหาสินค้า">
+      </label>
+
+      <div class="quick-contact">
+        <div>
+          <small>ต้องการสินค้าอย่างอื่น?</small>
+          <strong>สอบถามเพิ่มเติมทาง LINE ได้เลย</strong>
+        </div>
+        <a href="https://line.me/R/ti/p/@435ktnsf" target="_blank" rel="noopener">สอบถาม</a>
+      </div>
+    </section>
+
+    <div class="cats" id="cats">
+      <button class="active" data-cat="all">ทั้งหมด</button>
+      <button data-cat="water">น้ำดื่ม</button>
+      <button data-cat="rice">ข้าวสาร</button>
+      <button data-cat="noodle">บะหมี่กึ่งสำเร็จรูป</button>
+      <button data-cat="other">อื่นๆ</button>
+    </div>
+
+    <section class="section-head">
+      <div>
+        <div class="brand-mini">PRODUCTS</div>
+        <h3>เลือกซื้อสินค้า</h3>
+      </div>
+      <span id="count" class="count"></span>
+    </section>
+
+    <section id="products" class="product-grid"></section>
+  </main>
 
   <div id="sheetWrap" class="sheet-wrap hidden">
     <section class="sheet">
       <div class="sheet-handle"></div>
-
       <div class="sheet-head">
         <div>
           <div class="brand-mini">YOUR ORDER</div>
-          <h3>สรุปออเดอร์</h3>
+          <h3>ตะกร้าสินค้า</h3>
         </div>
         <button id="closeSheet" class="close-btn" type="button" aria-label="ปิด">×</button>
       </div>
@@ -123,32 +102,17 @@
       <div id="cartItems" class="cart-items"></div>
 
       <div class="order-form">
-        <div class="form-grid two-col">
-          <label>
-            <span>ชื่อผู้สั่ง</span>
-            <input id="name" placeholder="กรอกชื่อ">
-          </label>
-          <label>
-            <span>เลขห้อง</span>
-            <input id="room" placeholder="เช่น A1208">
-          </label>
+        <div class="two-col">
+          <label><span>ชื่อผู้สั่ง</span><input id="name" placeholder="กรอกชื่อ"></label>
+          <label><span>เลขห้อง</span><input id="room" placeholder="เช่น A1208"></label>
         </div>
 
-        <div class="form-grid two-col">
-          <label>
-            <span>เบอร์โทร</span>
-            <input id="phone" inputmode="tel" placeholder="08x-xxx-xxxx">
-          </label>
-          <label>
-            <span>เวลารับของ (ถ้ามี)</span>
-            <input id="pickupTime" placeholder="เช่น 19:00">
-          </label>
+        <div class="two-col">
+          <label><span>เบอร์โทร</span><input id="phone" inputmode="tel" placeholder="08x-xxx-xxxx"></label>
+          <label><span>เวลารับของ</span><input id="pickupTime" placeholder="เช่น 19:00"></label>
         </div>
 
-        <label>
-          <span>หมายเหตุเพิ่มเติม</span>
-          <textarea id="note" rows="3" placeholder="เช่น ต้องการรับของตอนเย็น หรือมีสินค้าที่อยากสอบถามเพิ่ม"></textarea>
-        </label>
+        <label><span>หมายเหตุเพิ่มเติม</span><textarea id="note" rows="3" placeholder="ระบุเพิ่มเติมได้ เช่น ของหมดให้ติดต่อกลับ"></textarea></label>
       </div>
 
       <div class="summary-box">
@@ -156,11 +120,11 @@
           <span>ยอดรวม</span>
           <strong id="sheetTotal">฿0</strong>
         </div>
-        <p>เมื่อกดส่งออเดอร์ ระบบสามารถบันทึกออเดอร์ไว้ก่อนได้ แม้ลูกค้าจะยังไม่ได้แอด LINE สำเร็จ</p>
+        <p>เมื่อกดส่งออเดอร์ ควรบันทึกข้อมูลลงฐานข้อมูลก่อน แล้วค่อยเปิด LINE</p>
       </div>
 
-      <button id="orderLine" class="primary-btn" type="button">ส่งออเดอร์</button>
-      <p class="order-note">จากนั้นระบบจะเปิด LINE @435ktnsf พร้อมข้อความสรุปออเดอร์อัตโนมัติ</p>
+      <button id="orderLine" class="checkout-btn" type="button">ส่งออเดอร์</button>
+      <p class="order-note">ระบบจะเปิด LINE พร้อมข้อความสรุปออเดอร์ที่จัดรูปแบบให้อ่านง่าย</p>
     </section>
   </div>
 
