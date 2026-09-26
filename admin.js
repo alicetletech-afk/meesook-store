@@ -328,6 +328,7 @@ let productImageData="";
 let productImageFile=null;
 function variantRow(v={}){
   const id=v.id||crypto.randomUUID();
+  const position=v.image_position||'center';
   return `<div class="variant-edit" data-vid="${id}">
     <input data-f="label" placeholder="เช่น ขวด / แพ็ค" value="${v.label||''}" required>
     <input data-f="price" type="number" min="0" step="0.01" placeholder="ราคา" value="${v.price??''}" required>
@@ -335,8 +336,26 @@ function variantRow(v={}){
     <input data-f="sku" placeholder="SKU" value="${v.sku||''}">
     <input data-f="image_url" placeholder="URL รูป SKU" value="${v.image_url||''}">
     <input data-image-file type="file" accept="image/*" aria-label="รูปของ ${v.label||'ตัวเลือกสินค้า'}">
+    <input data-f="image_scale" type="range" min="0.7" max="2" step="0.05" value="${v.image_scale||1}" aria-label="ซูมรูป ${v.label||'ตัวเลือกสินค้า'}">
+    <select data-f="image_position" aria-label="ตำแหน่งรูป ${v.label||'ตัวเลือกสินค้า'}">
+      <option value="center" ${position==='center'?'selected':''}>กลาง</option>
+      <option value="top" ${position==='top'?'selected':''}>บน</option>
+      <option value="bottom" ${position==='bottom'?'selected':''}>ล่าง</option>
+      <option value="left" ${position==='left'?'selected':''}>ซ้าย</option>
+      <option value="right" ${position==='right'?'selected':''}>ขวา</option>
+    </select>
     <button type="button" class="variant-remove" data-removevariant="${id}">×</button>
   </div>`;
+}
+
+function updateProductImagePreview(){
+  const img=$('productImagePreview')?.querySelector('img');
+  if(!img)return;
+  const position=$('pimagePosition')?.value||'center';
+  const origin={center:'50% 50%',top:'50% 0%',bottom:'50% 100%',left:'0% 50%',right:'100% 50%'}[position]||'50% 50%';
+  img.style.transform=`scale(${$('pimageScale')?.value||1})`;
+  img.style.objectPosition=position;
+  img.style.transformOrigin=origin;
 }
 
 function renderProductImagePreview(src){
@@ -344,6 +363,7 @@ function renderProductImagePreview(src){
   $('productImagePreview').innerHTML=src
     ? `<img src="${src}" alt="product preview">`
     : `<span>ยังไม่มีรูปสินค้า</span>`;
+  updateProductImagePreview();
 }
 async function uploadProductImage(file,pathPrefix){
   const supabaseClient=window.MeeSookAuth?.client?.();
@@ -368,12 +388,14 @@ function openProduct(pid=null){
   $('psort').value=p.sort_order??0;
   $('pactive').checked=p.active!==false;
   $('pimageUrl').value=p.image_url||'';
+  $('pimageScale').value=p.image_scale||1;
+  $('pimagePosition').value=p.image_position||'center';
   $('pimageFile').value='';
   productImageFile=null;
   renderProductImagePreview(p.image_url||'');
 
   const vs=isNew ? [] : variants.filter(x=>x.product_id===pid);
-  $('variantEditor').innerHTML=(vs.length?vs:[{id:crypto.randomUUID(),label:'',price:'',stock:0,sku:'',image_url:''}]).map(variantRow).join('');
+  $('variantEditor').innerHTML=(vs.length?vs:[{id:crypto.randomUUID(),label:'',price:'',stock:0,sku:'',image_url:'',image_scale:1,image_position:'center'}]).map(variantRow).join('');
 
   $('productModalTitle').textContent=isNew?'เพิ่มสินค้า':'แก้ไขสินค้า';
   $('deleteProductBtn').classList.toggle('hidden',isNew);
@@ -381,6 +403,8 @@ function openProduct(pid=null){
 }
 
 $('addp').onclick=()=>openProduct();
+$('pimageScale').oninput=updateProductImagePreview;
+$('pimagePosition').onchange=updateProductImagePreview;
 
 const importHeader=(value)=>String(value||'').trim().toLowerCase().replace(/[\s_\-()/]+/g,'');
 const importAliases={name:['ชื่อสินค้า','สินค้า','product','productname','name'],label:['ตัวเลือก','ตัวเลือกสินค้า','variant','variantlabel','label','option'],price:['ราคา','price'],stock:['สต๊อก','stock','จำนวน'],sku:['sku','รหัสsku'],category:['หมวด','หมวดหมู่','category'],description:['รายละเอียด','description'],legacy_id:['รหัสสินค้า','รหัสสินค้าเดิม','productid','legacyid'],image_url:['รูปภาพ','รูป','image','imageurl','image_url'],variant_image_url:['รูป SKU','รูปตัวเลือก','variantimage','variant_image_url'],active:['เปิดขาย','active']};
@@ -431,7 +455,7 @@ $('downloadImportTemplate').onclick=downloadImportTemplate;
 $('importProductsFile').onchange=async e=>{const file=e.target.files?.[0];if(file) await importProductsFromExcel(file);e.target.value=''};
 
 $('addVariantBtn').onclick=()=>{
-  $('variantEditor').insertAdjacentHTML('beforeend',variantRow({id:crypto.randomUUID(),label:'',price:'',stock:0,sku:'',image_url:''}));
+  $('variantEditor').insertAdjacentHTML('beforeend',variantRow({id:crypto.randomUUID(),label:'',price:'',stock:0,sku:'',image_url:'',image_scale:1,image_position:'center'}));
 };
 
 $('variantEditor').onclick=e=>{
@@ -478,6 +502,8 @@ $('productForm').onsubmit=async e=>{
     category:$('pcat').value,
     description:$('pdesc').value.trim(),
     image_url:imageUrl,
+    image_scale:+$('pimageScale').value||1,
+    image_position:$('pimagePosition').value||'center',
     active:$('pactive').checked,
     sort_order:+$('psort').value||0
   };
@@ -513,6 +539,8 @@ $('productForm').onsubmit=async e=>{
       stock:+fields.stock||0,
       sku:fields.sku.trim(),
       image_url:variantImageUrl,
+      image_scale:+fields.image_scale||1,
+      image_position:fields.image_position||'center',
       active:true
     });
   }

@@ -36,6 +36,7 @@ async function boot(){
 }
 const getVariants=pid=>variants.filter(v=>v.product_id===pid);
 const imageForVariant=(p,v)=>v?.image_url||p?.image_url||'';
+const imageStyle=item=>{const position=item?.image_position||'center';const origin={center:'50% 50%',top:'50% 0%',bottom:'50% 100%',left:'0% 50%',right:'100% 50%'}[position]||'50% 50%';return `style="transform:scale(${Number(item?.image_scale)||1});object-position:${position};transform-origin:${origin}"`};
 const priceRange=(vs)=>{const prices=vs.map(v=>Number(v.price)||0);if(!prices.length)return money(0);const min=Math.min(...prices),max=Math.max(...prices);return min===max?money(min):`฿${min.toLocaleString('th-TH')}-${max.toLocaleString('th-TH')}`};
 const qtyForProduct=pid=>Object.values(cart).filter(x=>x.product_id===pid).reduce((s,x)=>s+x.qty,0);
 const totalStock=pid=>getVariants(pid).reduce((s,v)=>s+(+v.stock||0),0);
@@ -57,10 +58,11 @@ function render(){
     const q=qtyForProduct(p.id);
     const av=availability(p.id);
     const soldOut=av.cls==="out";
-    const cardImage=vs.find(v=>v.image_url)?.image_url||p.image_url||'';
+    const cardImageVariant=vs.find(v=>v.image_url);
+    const cardImage=cardImageVariant?.image_url||p.image_url||'';
     return `<article class="product-card">
       <div class="thumb">
-        ${cardImage?`<img src="${cardImage}" alt="${p.name}">`:`<div class="thumb-placeholder">รูปสินค้า</div>`}
+        ${cardImage?`<img src="${cardImage}" alt="${p.name}" ${imageStyle(cardImageVariant||p)}>`:`<div class="thumb-placeholder">รูปสินค้า</div>`}
         <span class="availability ${av.cls}">${av.label}</span>
       </div>
       <h4>${p.name}</h4>
@@ -93,7 +95,7 @@ function openOption(pid,buy=false){
   if(!vs.length) return;
   pending={pid,variant_id:vs[0].id,qty:1,buy};
   $("optionTitle").textContent=p.name;
-  $("optionVariants").innerHTML=vs.map((v,i)=>{const image=imageForVariant(p,v);return `<button class="${i===0?"active":""}" data-v="${v.id}">${image?`<img src="${image}" alt="">`:''}<span><b>${v.label}</b><small>${money(v.price)}</small></span></button>`}).join("");
+  $("optionVariants").innerHTML=vs.map((v,i)=>{const image=imageForVariant(p,v);const imageItem=v.image_url?v:p;return `<button class="${i===0?"active":""}" data-v="${v.id}">${image?`<img src="${image}" alt="" ${imageStyle(imageItem)}>`:''}<span><b>${v.label}</b><small>${money(v.price)}</small></span></button>`}).join("");
   $("optQty").textContent=1;
   $("confirmAdd").textContent = buy ? "ไปหน้าส่งออเดอร์" : "เพิ่มลงตะกร้า";
   calcOpt();

@@ -253,7 +253,7 @@ aside{display:flex;flex-direction:column}
 .variant-header,
 .variant-edit{
   display:grid;
-  grid-template-columns:1.1fr .7fr .65fr .9fr 1.3fr 1fr 36px;
+  grid-template-columns:1.1fr .7fr .65fr .9fr 1.3fr 1fr .8fr .9fr 36px;
   gap:7px;
   align-items:center;
 }
@@ -273,6 +273,10 @@ aside{display:flex;flex-direction:column}
   width:100%;
   min-width:0;
 }
+
+.variant-edit select{width:100%;border:1px solid var(--line);background:#fff;border-radius:9px;padding:8px;min-width:0}
+.image-adjust-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.image-adjust-row input[type=range]{padding:0}
 
 .variant-remove{
   width:34px;

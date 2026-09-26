@@ -39,8 +39,23 @@
           <input id="pimageUrl" placeholder="https://...">
         </label>
 
+        <div class="image-adjust-row">
+          <label>ซูมรูปสินค้า
+            <input id="pimageScale" type="range" min="0.7" max="2" step="0.05" value="1">
+          </label>
+          <label>ตำแหน่งรูป
+            <select id="pimagePosition">
+              <option value="center">กลาง</option>
+              <option value="top">บน</option>
+              <option value="bottom">ล่าง</option>
+              <option value="left">ซ้าย</option>
+              <option value="right">ขวา</option>
+            </select>
+          </label>
+        </div>
+
         <p class="helper-text">
-          รูปจะถูกอัปโหลดไป Supabase Storage และบันทึก URL ลงฐานข้อมูลอัตโนมัติ
+          อัปโหลดรูปแล้วปรับซูม/ตำแหน่งได้เอง หน้าร้านจะแสดงตามค่านี้
         </p>
       </section>
 
@@ -91,6 +106,8 @@
         <span>SKU</span>
         <span>รูป SKU (URL)</span>
         <span>ไฟล์รูป</span>
+        <span>ซูม</span>
+        <span>ตำแหน่ง</span>
         <span></span>
       </div>
 
