@@ -50,7 +50,7 @@ function rc(){
 }
 function rs(){
   $('stocktable').innerHTML=`<table>
-    <tr><th><input id="selectAllProducts" type="checkbox" aria-label="เลือกสินค้าทั้งหมด"></th><th>สินค้า</th><th>ตัวเลือก</th><th>SKU</th><th>ราคา</th><th>สต๊อก</th><th></th></tr>
+    <tr><th><input id="selectAllProducts" type="checkbox" aria-label="เลือกสินค้าทั้งหมด"></th><th>สินค้า</th><th>ประเภทสินค้า</th><th>ตัวเลือก</th><th>SKU</th><th>ราคา</th><th>สต๊อก</th><th></th></tr>
     ${variants.map(v=>{
       let p=products.find(x=>x.id===v.product_id);
       const firstVariant=variants.find(x=>x.product_id===p?.id)?.id===v.id;
@@ -60,6 +60,7 @@ function rs(){
       return `<tr>
         <td>${firstVariant&&p?`<input data-product-select="${p.id}" type="checkbox" aria-label="เลือก ${p.name}">`:''}</td>
         <td><div class="product-name-cell">${img}<span><b>${p?.name||'-'}</b><br><span class="subtle">${p?.active===false?'ปิดขาย':'เปิดขาย'}</span></span></div></td>
+        <td><span class="category-chip">${categories.find(c=>c.slug===p?.category)?.name||p?.category||'อื่นๆ'}</span></td>
         <td>${v.label}</td>
         <td>${v.sku||'-'}</td>
         <td>${money(v.price)}</td>

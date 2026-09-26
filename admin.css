@@ -23,6 +23,7 @@
 @media(max-width:520px){.dashboard-toolbar{align-items:stretch}.dashboard-toolbar label{flex:1}.dashboard-toolbar button{align-self:end}}
 .category-manager{margin-top:14px;padding-top:14px;border-top:1px solid var(--line)}.category-manager h3{margin:3px 0 0;font-size:17px}.category-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:12px}.category-row:last-child{border-bottom:0}.category-row small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.category-actions{display:flex;gap:6px}.category-actions button{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 9px}.category-actions .danger{border-color:#efc4c1;color:#a24642}
 .modal-help{margin:0 0 12px;color:var(--muted);font-size:13px;line-height:1.5}
+.category-chip{display:inline-block;padding:4px 8px;border-radius:999px;background:#edf3ee;color:var(--gd);font-size:11px}
 .chart-grid{grid-template-columns:1.5fr .72fr;gap:10px;margin-top:10px}
 .chart-grid .panel{padding:14px 16px}
 .chart-grid canvas{height:180px !important}
