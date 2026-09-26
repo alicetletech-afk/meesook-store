@@ -36,3 +36,32 @@ button,input,select,textarea,a{font:inherit}button{cursor:pointer}.hidden{displa
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}label{display:grid;gap:4px;font-size:11px;color:var(--muted);margin-top:9px}input,select,textarea{width:100%;border:1px solid var(--line);background:#fff;border-radius:10px;padding:10px;outline:0}
 @media(max-width:800px){.product-grid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:650px){.app{padding:14px 10px 100px}.hero{grid-template-columns:1fr .42fr;padding:16px;border-radius:23px}.hero h2{font-size:28px}.bag{width:92px;height:92px}.bag svg{width:43px}.hero-actions{flex-direction:column}.product-grid{grid-template-columns:repeat(2,1fr);gap:8px}.thumb{height:110px}.card-actions{grid-template-columns:1fr}.lower-cta{align-items:flex-start;flex-direction:column}.lower-cta a{width:100%;text-align:center}.form-grid{grid-template-columns:1fr}}
+
+
+/* v8 inline checkout validation */
+.checkout-error{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  margin-top:12px;
+  padding:11px 12px;
+  border:1px solid #E9B8B3;
+  background:#FFF1EF;
+  border-radius:12px;
+  color:#914D47;
+}
+.checkout-error .error-dot{
+  flex:0 0 22px;
+  width:22px;height:22px;border-radius:50%;
+  display:grid;place-items:center;
+  background:#C75D55;color:#fff;
+  font:700 12px Poppins,sans-serif;
+}
+.checkout-error b{display:block;font-size:12px;margin-bottom:1px}
+.checkout-error p{margin:0;font-size:11px;line-height:1.45;color:#A45C55}
+
+.field-error{
+  border-color:#D97A72!important;
+  background:#FFF8F7!important;
+  box-shadow:0 0 0 3px rgba(217,122,114,.08);
+}

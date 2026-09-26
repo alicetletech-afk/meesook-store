@@ -151,3 +151,12 @@ window.MEESOOK_SUPABASE = {
 - CMS Save ใช้งานได้ และเปลี่ยนผลลัพธ์เป็น toast แทน browser alert
 - ปุ่มเปิดหน้าร้านเปลี่ยนจาก text link ลอย ๆ เป็น sidebar action button
 - confirm modal ของ destructive action ยังอยู่เหมือนเดิม
+
+
+## v8 Checkout validation
+- เอา browser alert ออกจาก checkout
+- validation แสดงภายใน checkout modal
+- มีกรอบแดงสรุปว่าขาด field ไหน
+- field ที่ขาดจะมี red border
+- focus ไปช่องแรกที่ต้องกรอก
+- พอผู้ใช้กรอกครบ error จะหายเอง

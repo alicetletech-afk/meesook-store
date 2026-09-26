@@ -1,5 +1,26 @@
 let snap, products=[], variants=[], cms={}, cart={}, selectedCat="all", pending=null;
 const $=id=>document.getElementById(id), money=n=>`฿${Number(n).toLocaleString("th-TH")}`;
+function clearCheckoutErrors(){
+  $("checkoutError").classList.add("hidden");
+  $("checkoutErrorText").textContent="";
+  ["name","room","phone","nearbyLocation"].forEach(id=>{
+    const el=$(id); if(el) el.classList.remove("field-error");
+  });
+}
+function showCheckoutErrors(items){
+  clearCheckoutErrors();
+  const labels=[];
+  items.forEach(({id,label})=>{
+    const el=$(id);
+    if(el) el.classList.add("field-error");
+    labels.push(label);
+  });
+  $("checkoutErrorText").textContent=`กรุณากรอก: ${labels.join(" / ")}`;
+  $("checkoutError").classList.remove("hidden");
+  const first=items[0] && $(items[0].id);
+  if(first) first.focus();
+}
+
 
 async function boot(){
   snap=await MeeSookStore.getSnapshot();
@@ -119,9 +140,26 @@ $("confirmAdd").onclick=()=>{
 $("deliveryType").onchange=()=>$("nearbyWrap").classList.toggle("hidden",$("deliveryType").value!=="nearby");
 
 $("orderLine").onclick=async()=>{
+  clearCheckoutErrors();
   const arr=Object.values(cart);
-  if(!arr.length)return alert("กรุณาเลือกสินค้า");
-  if(!$("name").value.trim()||!$("room").value.trim()||!$("phone").value.trim())return alert("กรอกชื่อ เลขห้อง และเบอร์โทรก่อนนะคะ");
+  if(!arr.length){
+    $("checkoutErrorText").textContent="ยังไม่มีสินค้าในออเดอร์";
+    $("checkoutError").classList.remove("hidden");
+    return;
+  }
+
+  const missing=[];
+  if(!$("name").value.trim()) missing.push({id:"name",label:"ชื่อผู้สั่ง"});
+  if(!$("room").value.trim()) missing.push({id:"room",label:"เลขห้อง"});
+  if(!$("phone").value.trim()) missing.push({id:"phone",label:"เบอร์โทร"});
+  if($("deliveryType").value==="nearby" && !$("nearbyLocation").value.trim()){
+    missing.push({id:"nearbyLocation",label:"สถานที่รับสินค้า"});
+  }
+  if(missing.length){
+    showCheckoutErrors(missing);
+    return;
+  }
+
   const customer=await MeeSookStore.createCustomer({name:$("name").value.trim(),room:$("room").value.trim(),phone:$("phone").value.trim()});
   const delivery=$("deliveryType").value==="lobby"?"ล็อบบี้ IDEO MOBI EASTGATE":$("nearbyLocation").value.trim();
   const total=arr.reduce((s,x)=>s+x.price*x.qty,0);
@@ -132,4 +170,16 @@ $("orderLine").onclick=async()=>{
   const text=[`มีสุขส่งถึง | ออเดอร์ใหม่`,`เลขออเดอร์: ${result.order_no}`,"","รายการสินค้า",...arr.map((x,i)=>`${i+1}. ${x.product_name} (${x.variant_label}) x${x.qty} = ${x.price*x.qty} บาท`),"",`ยอดรวม`,`${total} บาท`,"","ข้อมูลผู้สั่ง",`ชื่อ: ${customer.name}`,`ห้อง: ${customer.room}`,`โทร: ${customer.phone}`,`เวลารับของ: ${$("pickupTime").value.trim()||"-"}`,"","จุดรับสินค้า",delivery,"","หมายเหตุ",$("note").value.trim()||"-"].join("\n");
   location.href=`https://line.me/R/oaMessage/@435ktnsf/?${encodeURIComponent(text)}`;
 };
+
+["name","room","phone","nearbyLocation"].forEach(id=>{
+  const el=$(id);
+  if(!el) return;
+  el.addEventListener("input",()=>{
+    el.classList.remove("field-error");
+    const remaining=["name","room","phone"].filter(x=>!$(x).value.trim());
+    if($("deliveryType").value==="nearby" && !$("nearbyLocation").value.trim()) remaining.push("nearbyLocation");
+    if(remaining.length===0) clearCheckoutErrors();
+  });
+});
+
 boot();

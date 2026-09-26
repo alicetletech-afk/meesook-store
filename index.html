@@ -105,7 +105,14 @@
       </div>
       <div id="cartItems"></div>
 
-      <div class="form-grid">
+      <div id="checkoutError" class="checkout-error hidden" role="alert">
+  <span class="error-dot">!</span>
+  <div>
+    <b>กรอกข้อมูลให้ครบก่อนส่งออเดอร์</b>
+    <p id="checkoutErrorText"></p>
+  </div>
+</div>
+<div class="form-grid">
         <label>ชื่อผู้สั่ง<input id="name" placeholder="กรอกชื่อ"></label>
         <label>เลขห้อง<input id="room" placeholder="เช่น A1208"></label>
         <label>เบอร์โทร<input id="phone" placeholder="08x-xxx-xxxx"></label>
