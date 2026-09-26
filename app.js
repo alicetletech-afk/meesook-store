@@ -176,7 +176,6 @@ $("orderLine").onclick=async()=>{
     });
     const text=[
       "🛵 mesook | ออเดอร์ใหม่",
-      "━━━━━━━━━━━━━━",
       `🧾 เลขออเดอร์: ${result.order_no}`,
       "",
       "🛒 รายการสินค้า",
@@ -184,17 +183,15 @@ $("orderLine").onclick=async()=>{
       "",
       `💰 ยอดรวม: ฿${total.toLocaleString("th-TH")}`,
       "",
-      "👤 ข้อมูลผู้สั่ง",
+      "ข้อมูลผู้สั่ง",
       `ชื่อ: ${customer.name}`,
-      `🏠 ห้อง: ${customer.room}`,
-      `📞 โทร: ${customer.phone}`,
+      `ห้อง: ${customer.room}`,
+      `โทร: ${customer.phone}`,
       "",
-      "📦 การรับสินค้า",
-      `📍 จุดรับ: ${delivery}`,
-      `🕒 เวลารับ: ${$("pickupTime").value.trim()||"ไม่ระบุ"}`,
-      `📝 หมายเหตุ: ${$("note").value.trim()||"ไม่มี"}`,
-      "",
-      "🙏 ขอบคุณที่สั่งซื้อกับ mesook"
+      "การรับสินค้า",
+      `จุดรับ: ${delivery}`,
+      `เวลารับ: ${$("pickupTime").value.trim()||"ไม่ระบุ"}`,
+      `หมายเหตุ: ${$("note").value.trim()||"ไม่มี"}`
     ].join("\n");
     location.href=`https://line.me/R/oaMessage/@435ktnsf/?${encodeURIComponent(text)}`;
   }catch(error){
