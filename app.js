@@ -71,14 +71,27 @@ function openOption(pid,buy=false){
   pending={pid,variant_id:vs[0].id,qty:1,buy};
   $("optionTitle").textContent=p.name;
   $("optionVariants").innerHTML=vs.map((v,i)=>`<button class="${i===0?"active":""}" data-v="${v.id}">${v.label} · ${money(v.price)}</button>`).join("");
-  $("optQty").textContent=1; calcOpt(); $("optionSheetWrap").classList.remove("hidden");
+  $("optQty").textContent=1;
+  $("confirmAdd").textContent = buy ? "ไปหน้าส่งออเดอร์" : "เพิ่มลงตะกร้า";
+  calcOpt();
+  $("optionSheetWrap").classList.remove("hidden");
 }
 function calcOpt(){const v=variants.find(x=>x.id===pending.variant_id);$("optTotal").textContent=money(+v.price*pending.qty)}
 
 document.addEventListener("click",e=>{
   const c=e.target.closest("[data-cat]");if(c){selectedCat=c.dataset.cat;document.querySelectorAll("[data-cat]").forEach(x=>x.classList.toggle("active",x===c));render();return}
   const a=e.target.closest("[data-add]");if(a){const vs=getVariants(a.dataset.add).filter(v=>+v.stock>0);if(vs.length>1)openOption(a.dataset.add,false);else if(vs[0])addVariant(vs[0].id);return}
-  const b=e.target.closest("[data-buy]");if(b){openOption(b.dataset.buy,true);return}
+  const b=e.target.closest("[data-buy]");
+  if(b){
+    const vs=getVariants(b.dataset.buy).filter(v=>+v.stock>0);
+    if(vs.length===1){
+      addVariant(vs[0].id,1,true);
+      $("cartSheetWrap").classList.remove("hidden");
+    } else if(vs.length>1){
+      openOption(b.dataset.buy,true);
+    }
+    return
+  }
   const v=e.target.closest("[data-v]");if(v&&pending){pending.variant_id=v.dataset.v;document.querySelectorAll("#optionVariants button").forEach(x=>x.classList.toggle("active",x===v));calcOpt();return}
   const pl=e.target.closest("[data-plus]");if(pl){const v=variants.find(x=>x.id===pl.dataset.plus);cart[v.id].qty=Math.min(+v.stock,cart[v.id].qty+1);totals();render();return}
   const mi=e.target.closest("[data-minus]");if(mi){const k=mi.dataset.minus;cart[k].qty--;if(cart[k].qty<1)delete cart[k];totals();render();return}
@@ -89,10 +102,20 @@ $("search").oninput=render;
 $("shopNow").onclick=()=>$("productSection").scrollIntoView({behavior:"smooth"});
 $("cartBar").onclick=()=>$("cartSheetWrap").classList.remove("hidden");
 $("closeCart").onclick=()=>$("cartSheetWrap").classList.add("hidden");
-$("closeOption").onclick=()=>$("optionSheetWrap").classList.add("hidden");
+$("closeOption").onclick=()=>{
+  $("optionSheetWrap").classList.add("hidden");
+  $("confirmAdd").textContent="เพิ่มลงตะกร้า";
+};
 $("optMinus").onclick=()=>{pending.qty=Math.max(1,pending.qty-1);$("optQty").textContent=pending.qty;calcOpt()};
 $("optPlus").onclick=()=>{const v=variants.find(x=>x.id===pending.variant_id);pending.qty=Math.min(+v.stock,pending.qty+1);$("optQty").textContent=pending.qty;calcOpt()};
-$("confirmAdd").onclick=()=>{addVariant(pending.variant_id,pending.qty,pending.buy);$("optionSheetWrap").classList.add("hidden");if(pending.buy)$("cartSheetWrap").classList.remove("hidden")};
+$("confirmAdd").onclick=()=>{
+  const buyNow = !!pending.buy;
+  addVariant(pending.variant_id,pending.qty,buyNow);
+  $("optionSheetWrap").classList.add("hidden");
+  if(buyNow){
+    $("cartSheetWrap").classList.remove("hidden");
+  }
+};
 $("deliveryType").onchange=()=>$("nearbyWrap").classList.toggle("hidden",$("deliveryType").value!=="nearby");
 
 $("orderLine").onclick=async()=>{

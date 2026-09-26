@@ -132,3 +132,15 @@ window.MEESOOK_SUPABASE = {
 - ลดความสูงกราฟ
 - จำกัดความสูงส่วนออเดอร์ล่าสุด / ต้องเติมสต๊อก แล้วให้ scroll ได้
 - ลด padding ของ cards เพื่อไม่ให้หน้า overview ดูยืด
+
+
+## v6 Buy Now flow
+- ปุ่ม `ซื้อเลย` แยก flow จาก `เพิ่มลงตะกร้า`
+- สินค้ามี variant เดียว:
+  - ซื้อเลย -> ใส่สินค้านั้น 1 ชิ้น -> เปิด Checkout ทันที
+- สินค้ามีหลาย variant:
+  - ซื้อเลย -> Bottom Sheet เลือก variant + จำนวน
+  - CTA เปลี่ยนเป็น `ไปหน้าส่งออเดอร์`
+  - กดยืนยัน -> เปิด Checkout ทันที
+- Buy Now ใช้ cart แบบ replace เพื่อให้ flow เป็น single immediate purchase
+- Add to Cart ยังใช้ flow เดิมและให้ลูกค้าช้อปต่อได้
