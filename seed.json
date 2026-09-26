@@ -1,0 +1,332 @@
+{
+  "products": [
+    {
+      "id": "p_singha15",
+      "name": "สิงห์ 1.5 ล.",
+      "category": "water",
+      "description": "น้ำดื่มสิงห์ 1.5 ล.",
+      "active": true,
+      "image_url": "",
+      "sort_order": 10
+    },
+    {
+      "id": "p_singha600",
+      "name": "สิงห์ 600 มล.",
+      "category": "water",
+      "description": "น้ำดื่มสิงห์ 600 มล.",
+      "active": true,
+      "image_url": "",
+      "sort_order": 20
+    },
+    {
+      "id": "p_crystal15",
+      "name": "คริสตัล 1.5 ล.",
+      "category": "water",
+      "description": "น้ำดื่มคริสตัล 1.5 ล.",
+      "active": true,
+      "image_url": "",
+      "sort_order": 30
+    },
+    {
+      "id": "p_crystal600",
+      "name": "คริสตัล 600 มล.",
+      "category": "water",
+      "description": "น้ำดื่มคริสตัล 600 มล.",
+      "active": true,
+      "image_url": "",
+      "sort_order": 40
+    },
+    {
+      "id": "p_purra15",
+      "name": "เพอร์ร่า 1.5 ล.",
+      "category": "water",
+      "description": "น้ำดื่มเพอร์ร่า 1.5 ล.",
+      "active": true,
+      "image_url": "",
+      "sort_order": 50
+    },
+    {
+      "id": "p_dino_jasmine",
+      "name": "ไดโนเสาร์ หอมมะลิใหม่ 1 กก.",
+      "category": "rice",
+      "description": "ข้าวสารแบบแพ็ค",
+      "active": true,
+      "image_url": "",
+      "sort_order": 60
+    },
+    {
+      "id": "p_dino_brown",
+      "name": "ไดโนเสาร์ กล้องหอมมะลิ 1 กก.",
+      "category": "rice",
+      "description": "ข้าวสารแบบแพ็ค",
+      "active": true,
+      "image_url": "",
+      "sort_order": 70
+    },
+    {
+      "id": "p_jasmine_bulk",
+      "name": "หอมมะลิใหม่",
+      "category": "rice",
+      "description": "ข้าวสารแบบตัก",
+      "active": true,
+      "image_url": "",
+      "sort_order": 80
+    },
+    {
+      "id": "p_sticky_bulk",
+      "name": "ข้าวเหนียวเขี้ยวงู",
+      "category": "rice",
+      "description": "ข้าวสารแบบตัก",
+      "active": true,
+      "image_url": "",
+      "sort_order": 90
+    },
+    {
+      "id": "p_mama",
+      "name": "มาม่า",
+      "category": "noodle",
+      "description": "สินค้าแบบซอง",
+      "active": true,
+      "image_url": "",
+      "sort_order": 100
+    }
+  ],
+  "variants": [
+    {
+      "id": "v_singha15_bottle",
+      "product_id": "p_singha15",
+      "label": "ขวด",
+      "sku": "SINGHA15-B",
+      "price": 14,
+      "stock": 20,
+      "active": true
+    },
+    {
+      "id": "v_singha15_pack",
+      "product_id": "p_singha15",
+      "label": "แพ็ค",
+      "sku": "SINGHA15-P",
+      "price": 65,
+      "stock": 5,
+      "active": true
+    },
+    {
+      "id": "v_singha600_bottle",
+      "product_id": "p_singha600",
+      "label": "ขวด",
+      "sku": "SINGHA600-B",
+      "price": 7,
+      "stock": 24,
+      "active": true
+    },
+    {
+      "id": "v_singha600_pack",
+      "product_id": "p_singha600",
+      "label": "แพ็ค",
+      "sku": "SINGHA600-P",
+      "price": 65,
+      "stock": 7,
+      "active": true
+    },
+    {
+      "id": "v_crystal15_bottle",
+      "product_id": "p_crystal15",
+      "label": "ขวด",
+      "sku": "CRYSTAL15-B",
+      "price": 14,
+      "stock": 18,
+      "active": true
+    },
+    {
+      "id": "v_crystal15_pack",
+      "product_id": "p_crystal15",
+      "label": "แพ็ค",
+      "sku": "CRYSTAL15-P",
+      "price": 62,
+      "stock": 3,
+      "active": true
+    },
+    {
+      "id": "v_crystal600_bottle",
+      "product_id": "p_crystal600",
+      "label": "ขวด",
+      "sku": "CRYSTAL600-B",
+      "price": 7,
+      "stock": 22,
+      "active": true
+    },
+    {
+      "id": "v_crystal600_pack",
+      "product_id": "p_crystal600",
+      "label": "แพ็ค",
+      "sku": "CRYSTAL600-P",
+      "price": 60,
+      "stock": 6,
+      "active": true
+    },
+    {
+      "id": "v_purra15_bottle",
+      "product_id": "p_purra15",
+      "label": "ขวด",
+      "sku": "PURRA15-B",
+      "price": 20,
+      "stock": 12,
+      "active": true
+    },
+    {
+      "id": "v_purra15_pack",
+      "product_id": "p_purra15",
+      "label": "แพ็ค",
+      "sku": "PURRA15-P",
+      "price": 100,
+      "stock": 4,
+      "active": true
+    },
+    {
+      "id": "v_dino_jasmine_pack",
+      "product_id": "p_dino_jasmine",
+      "label": "แพ็ค",
+      "sku": "DINO-JASMINE",
+      "price": 56,
+      "stock": 10,
+      "active": true
+    },
+    {
+      "id": "v_dino_brown_pack",
+      "product_id": "p_dino_brown",
+      "label": "แพ็ค",
+      "sku": "DINO-BROWN",
+      "price": 61,
+      "stock": 8,
+      "active": true
+    },
+    {
+      "id": "v_jasmine_bulk_kg",
+      "product_id": "p_jasmine_bulk",
+      "label": "1 กก.",
+      "sku": "JASMINE-KG",
+      "price": 50,
+      "stock": 15,
+      "active": true
+    },
+    {
+      "id": "v_sticky_bulk_kg",
+      "product_id": "p_sticky_bulk",
+      "label": "1 กก.",
+      "sku": "STICKY-KG",
+      "price": 35,
+      "stock": 12,
+      "active": true
+    },
+    {
+      "id": "v_mama_piece",
+      "product_id": "p_mama",
+      "label": "ซอง",
+      "sku": "MAMA-PCS",
+      "price": 7,
+      "stock": 30,
+      "active": true
+    }
+  ],
+  "customers": [
+    {
+      "id": "c_demo1",
+      "name": "ลูกค้าตัวอย่าง",
+      "room": "A1208",
+      "phone": "0800000000",
+      "line_display_name": "",
+      "notes": "",
+      "created_at": "2026-09-26T10:00:00+07:00"
+    },
+    {
+      "id": "c_demo2",
+      "name": "คุณบี",
+      "room": "B0711",
+      "phone": "0811111111",
+      "line_display_name": "",
+      "notes": "",
+      "created_at": "2026-09-26T11:00:00+07:00"
+    }
+  ],
+  "orders": [
+    {
+      "id": "o_demo1",
+      "order_no": "MS0001",
+      "customer_id": "c_demo1",
+      "customer_name": "ลูกค้าตัวอย่าง",
+      "room": "A1208",
+      "phone": "0800000000",
+      "pickup_time": "19:00",
+      "delivery_type": "lobby",
+      "delivery_location": "ล็อบบี้ IDEO MOBI EASTGATE",
+      "note": "",
+      "subtotal": 136,
+      "total": 136,
+      "status": "paid",
+      "payment_status": "paid",
+      "payment_method": "โอนเงิน",
+      "channel": "LINE",
+      "created_at": "2026-09-26T12:20:00+07:00",
+      "updated_at": "2026-09-26T12:20:00+07:00"
+    },
+    {
+      "id": "o_demo2",
+      "order_no": "MS0002",
+      "customer_id": "c_demo2",
+      "customer_name": "คุณบี",
+      "room": "B0711",
+      "phone": "0811111111",
+      "pickup_time": "20:00",
+      "delivery_type": "lobby",
+      "delivery_location": "ล็อบบี้ IDEO MOBI EASTGATE",
+      "note": "",
+      "subtotal": 65,
+      "total": 65,
+      "status": "pending",
+      "payment_status": "pending",
+      "payment_method": "โอนเงิน",
+      "channel": "Web",
+      "created_at": "2026-09-26T13:10:00+07:00",
+      "updated_at": "2026-09-26T13:10:00+07:00"
+    }
+  ],
+  "order_items": [
+    {
+      "id": "oi_demo1",
+      "order_id": "o_demo1",
+      "variant_id": "v_singha15_pack",
+      "product_name": "สิงห์ 1.5 ล.",
+      "variant_label": "แพ็ค",
+      "unit_price": 65,
+      "qty": 2,
+      "line_total": 130
+    },
+    {
+      "id": "oi_demo2",
+      "order_id": "o_demo1",
+      "variant_id": "v_mama_piece",
+      "product_name": "มาม่า",
+      "variant_label": "ซอง",
+      "unit_price": 7,
+      "qty": 1,
+      "line_total": 7
+    },
+    {
+      "id": "oi_demo3",
+      "order_id": "o_demo2",
+      "variant_id": "v_singha15_pack",
+      "product_name": "สิงห์ 1.5 ล.",
+      "variant_label": "แพ็ค",
+      "unit_price": 65,
+      "qty": 1,
+      "line_total": 65
+    }
+  ],
+  "cms": {
+    "hero_title": "ของกิน ของใช้ ส่งถึงง่ายๆ",
+    "delivery_copy": "ส่งฟรีที่ล็อบบี้ IDEO MOBI EASTGATE / พื้นที่ใกล้เคียง",
+    "help_title": "ไม่พบสินค้าที่หาอยู่?",
+    "help_body": "สอบถามสินค้าอื่น เช็กสต๊อก หรือพื้นที่จัดส่งเพิ่มเติมได้เลย",
+    "line_url": "https://line.me/R/ti/p/@435ktnsf"
+  }
+}

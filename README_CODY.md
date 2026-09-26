@@ -1,34 +1,94 @@
-# มีสุขส่งถึง — CMS / POS prototype
+# มีสุขส่งถึง — Full Suite v2 / Supabase-ready
 
-เปิด `admin.html` เพื่อดูหลังบ้าน
+## หลักสำคัญ
+หน้าร้าน + CMS + POS ใช้ **canonical data model เดียวกัน** ผ่าน `store.js`
+จึงไม่ควรมีข้อมูลสินค้า/ลูกค้า/ออเดอร์คนละชุดกันอีก
 
-## มีอะไรแล้ว
-- Dashboard: ยอดขายวันนี้, จำนวนออเดอร์, รอชำระ, low stock
-- POS: เลือกสินค้า, +/- จำนวน, เลือกวิธีชำระ, บันทึกการขาย และตัด stock
-- Orders: เปลี่ยนสถานะ รอชำระ / ชำระแล้ว / พร้อมส่ง / สำเร็จ / ยกเลิก
-- Products / Inventory: เพิ่มสินค้า, แก้สินค้า, ปรับ stock
-- CMS: แก้ Hero, delivery copy, help CTA พร้อม preview
-- Prototype ใช้ localStorage เพื่อกดเล่นได้ทันที
+## เปิดดู prototype
+- `index.html` = หน้าร้าน
+- `admin.html` = Dashboard / POS / Orders / Customers / Inventory / CMS
+- ตอนยังไม่ใส่ Supabase จะใช้ `localStorage` + `seed.json`
+- พอใส่ Supabase URL/anon key ใน `supabase-config.js` ระบบจะสลับไปอ่าน/เขียน Supabase
 
-## Production / Supabase
-แนะนำ tables:
+> หมายเหตุ: ถ้าเปิดไฟล์ด้วย `file://` บาง browser จะ block `fetch(seed.json)`.
+> แนะนำรันผ่าน local server เช่น VS Code Live Server หรือ `python -m http.server`.
+
+## หลังบ้าน
+Dashboard
+- ยอดขายวันนี้
+- จำนวนออเดอร์วันนี้
+- ลูกค้าทั้งหมด
+- low stock
+- กราฟยอดขาย 7 วัน
+- กราฟสถานะออเดอร์
+
+POS
+- ใช้ products/variants ชุดเดียวกับหน้าร้าน
+- +/- จำนวน
+- บันทึก order + customer + stock
+
+Orders
+- ดูข้อมูลลูกค้า / ห้อง / เบอร์ / ยอด / ช่องทาง
+- แก้ไขออเดอร์
+- ลบออเดอร์
+- status: pending / paid / ready / done / cancelled
+
+Customers
+- อ่านจาก customer table เดียวกับ checkout/POS
+- ดูจำนวนออเดอร์ + ยอดซื้อรวม + ออเดอร์ล่าสุด
+
+Products / Inventory
+- Product + Variant
+- ราคา / SKU / stock มาจากข้อมูลเดียวกับหน้าร้าน
+- แก้หลังบ้านแล้วหน้าร้านอ่านค่าเดียวกัน
+
+CMS
+- Hero title
+- Delivery copy
+- Help title/body
+- หน้าร้านอ่านจาก `cms_settings` ชุดเดียวกัน
+
+## Supabase Setup
+1. สร้าง Supabase project
+2. เปิด SQL Editor
+3. Run `schema.sql`
+4. ไป Project Settings > API
+5. ใส่ URL และ anon key ลง `supabase-config.js`
+
+```js
+window.MEESOOK_SUPABASE = {
+  url: "https://xxx.supabase.co",
+  anonKey: "..."
+};
+```
+
+## Data Model
 - products
-- product_variants
-- inventory_movements
+- variants
+- customers
 - orders
 - order_items
 - payments
+- inventory_movements
 - cms_settings
 
-Flow:
-1. Storefront checkout -> INSERT order + order_items
-2. Supabase คืน order_no
-3. ค่อยเปิด LINE พร้อมข้อความออเดอร์
-4. POS checkout -> order + items + payment + inventory movement
-5. stock ควรตัดด้วย transaction/RPC ป้องกัน oversell
+## Important production notes
+- `create_store_order()` เป็น transaction เดียว: order + items + deduct stock
+- มี row locking ป้องกัน oversell ระหว่าง create order
+- order number สร้าง server-side
+- order_items cascade delete ตาม order
+- `restore_order_stock()` เตรียมไว้สำหรับคืน stock เมื่อยกเลิก
+- หลังบ้าน production ควรใช้ Supabase Auth และ session JWT ของ admin
+- ตอนนี้ adapter ใช้ anon key ถ้ากรอก config ดังนั้น CRUD หลังบ้านจะติด RLS จนกว่า Cody จะต่อ Auth ให้เรียบร้อย
+- อย่าเปิด policy ให้ anon แก้ orders/customers เพื่อแก้ปัญหาชั่วคราว เพราะข้อมูลลูกค้าไม่ควร public
 
-ก่อนขึ้นจริง:
-- Supabase Auth สำหรับ admin
-- RLS
-- server-side order number
-- inventory audit log
+## งานที่ Cody ต้องต่อให้ production สมบูรณ์
+1. Supabase Auth สำหรับ admin
+2. เปลี่ยน `store.js` admin request ให้ส่ง access token จาก session
+3. import seed catalog เข้า Supabase จริง
+4. ในการ cancel/delete order:
+   - cancel: call `restore_order_stock(order_id)` ก่อนเปลี่ยน status ถ้าต้องคืน stock
+   - delete: ตกลง business rule ก่อนว่าจะคืน stock หรือไม่
+5. payment record / payment proof ถ้าจะใช้
+6. image upload ผ่าน Supabase Storage ถ้าจะให้ CMS จัดการรูปจริง
+7. เพิ่ม audit log ถ้าต้องการ trace คนแก้ order/stock

@@ -1,131 +1,46 @@
-const products = window.MEESOOK_PRODUCTS || [];
-let selectedCat = "all";
-let cart = {};
-const $ = id => document.getElementById(id);
-const money = n => `฿${Number(n).toLocaleString("th-TH")}`;
-const cartIcon = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 18a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm10 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4ZM6.2 5l.57 2H21l-1.8 7.15a2 2 0 0 1-1.94 1.52H9.1a2 2 0 0 1-1.95-1.56L4.11 2H1V0h4.63l.57 2.27L6.2 5Z"/></svg>`;
+let snap, products=[], variants=[], cms={}, cart={}, selectedCat="all", pending=null;
+const $=id=>document.getElementById(id), money=n=>`฿${Number(n).toLocaleString("th-TH")}`;
+const categoryTH={water:"WATER",rice:"RICE",noodle:"NOODLE",other:"STORE"};
 
-function label(cat){ return ({water:"WATER",rice:"RICE",noodle:"NOODLE",other:"STORE"})[cat] || "ITEM"; }
-function getVariant(pid,vid){ const p=products.find(x=>x.id===pid); return [p,p.variants.find(x=>x.id===vid)]; }
-function filtered(){
-  const q=$("search").value.trim().toLowerCase();
-  return products.filter(p => (selectedCat==="all"||p.category===selectedCat) && (!q || `${p.name} ${p.subtitle||""}`.toLowerCase().includes(q)));
+async function boot(){
+  snap=await MeeSookStore.getSnapshot(); products=snap.products.filter(x=>x.active!==false); variants=snap.variants.filter(x=>x.active!==false); cms=snap.cms||{};
+  $("heroTitle").innerHTML=(cms.hero_title||"ของกิน ของใช้ ส่งถึงง่ายๆ").replace("ส่งถึง","<br>ส่งถึง");
+  $("heroDelivery").textContent=cms.delivery_copy||"ส่งฟรีที่ล็อบบี้ IDEO MOBI EASTGATE / พื้นที่ใกล้เคียง";
+  $("helpTitle").textContent=cms.help_title||"ไม่พบสินค้าที่หาอยู่?";
+  $("helpBody").textContent=cms.help_body||"สอบถามสินค้าอื่น เช็กสต๊อก หรือพื้นที่จัดส่งเพิ่มเติมได้เลย";
+  ["lineTop","heroLine","helpLine"].forEach(id=>$(id).href=cms.line_url||"https://line.me/R/ti/p/@435ktnsf");
+  render(); totals();
 }
-function renderProducts(){
-  const list=filtered();
-  $("count").textContent=`${list.length} รายการ`;
-  $("products").innerHTML=list.map(p=>{
-    const v=p.variants[0];
-    return `<article class="product-card" data-id="${p.id}" data-variant="${v.id}">
-      <div class="thumb"><span class="thumb-mark">${label(p.category)}</span><span class="stock-badge">เหลือ ${p.stock}</span></div>
-      <h4>${p.name}</h4>
-      <div class="product-sub">${p.subtitle||""}</div>
-      <div class="variant-wrap">${p.variants.map((x,i)=>`<button class="variant-btn ${i===0?"active":""}" type="button" data-p="${p.id}" data-v="${x.id}">${x.label} ${money(x.price)}</button>`).join("")}</div>
-      <div class="price-block"><strong>${money(v.price)}</strong><span>/ ${v.label}</span></div>
-      <div class="action-row">
-        <button class="action-btn add-cart" type="button" data-add="${p.id}">${cartIcon}<span>เพิ่มลงตะกร้า</span></button>
-        <button class="action-btn buy-now" type="button" data-buy="${p.id}">สั่งซื้อเลย</button>
-      </div>
-    </article>`;
-  }).join("");
-}
-function lines(){ return Object.values(cart); }
-function qtyTotal(){ return lines().reduce((s,x)=>s+x.qty,0); }
-function priceTotal(){ return lines().reduce((s,x)=>s+x.qty*x.price,0); }
-function updateCart(){
-  const qty=qtyTotal();
-  $("cartCount").textContent=qty;
-  $("cartTotal").textContent=money(priceTotal());
-  $("sheetTotal").textContent=money(priceTotal());
-  $("cartBar").classList.toggle("hidden",qty===0);
-  $("cartItems").innerHTML = qty ? lines().map(x=>`<div class="cart-item">
-    <div><b>${x.name}</b><div class="item-meta">${x.variantLabel} · ${money(x.price)} / ${x.variantLabel}</div></div>
-    <div class="qty-box"><button type="button" data-minus="${x.key}">−</button><strong>${x.qty}</strong><button type="button" data-plus="${x.key}">+</button></div>
-  </div>`).join("") : `<div class="item-meta" style="padding:8px 0">ยังไม่มีสินค้าในตะกร้า</div>`;
-}
-function add(pid,vid,replace=false){
-  const [p,v]=getVariant(pid,vid), key=`${pid}__${vid}`;
-  if(replace) cart={};
-  if(!cart[key]) cart[key]={key,pid,vid,name:p.name,variantLabel:v.label,price:v.price,qty:0};
-  cart[key].qty++;
-  updateCart();
-}
-function openCart(){ $("sheetWrap").classList.remove("hidden"); }
-function closeCart(){ $("sheetWrap").classList.add("hidden"); }
+const getVariants=pid=>variants.filter(v=>v.product_id===pid);
+const qtyForProduct=pid=>Object.values(cart).filter(x=>x.product_id===pid).reduce((s,x)=>s+x.qty,0);
+function visible(){let q=$("search").value.toLowerCase().trim();return products.filter(p=>(selectedCat==="all"||p.category===selectedCat)&&(!q||`${p.name} ${p.description||""}`.toLowerCase().includes(q))).sort((a,b)=>(a.sort_order||0)-(b.sort_order||0))}
+function render(){let list=visible();$("count").textContent=`${list.length} รายการ`;$("products").innerHTML=list.map(p=>{let vs=getVariants(p.id),q=qtyForProduct(p.id),min=Math.min(...vs.map(v=>+v.price)),stock=vs.reduce((s,v)=>s+(+v.stock||0),0);return `<article class="product-card"><div class="thumb"><span>${categoryTH[p.category]||"ITEM"}</span><span>คงเหลือ ${stock}</span></div><h4>${p.name}</h4><p>${p.description||""}</p><div class="price">${money(min)}</div><div class="card-actions">${q?`<div class="stepper"><button data-cardminus="${p.id}">−</button><b>${q}</b><button data-cardplus="${p.id}">+</button></div>`:`<button class="add" data-add="${p.id}">เพิ่มลงตะกร้า</button>`}<button class="buy" data-buy="${p.id}">สั่งซื้อเลย</button></div></article>`}).join("")}
+function totals(){let arr=Object.values(cart),qty=arr.reduce((s,x)=>s+x.qty,0),total=arr.reduce((s,x)=>s+x.qty*x.price,0);$("cartCount").textContent=qty;$("cartTotal").textContent=money(total);$("sheetTotal").textContent=money(total);$("cartBar").classList.toggle("hidden",qty===0);$("cartItems").innerHTML=arr.map(x=>`<div class="cart-item"><div><b>${x.product_name}</b><small>${x.variant_label} · ${money(x.price)}</small></div><div class="qty"><button data-minus="${x.variant_id}">−</button><b>${x.qty}</b><button data-plus="${x.variant_id}">+</button></div></div>`).join("")||"ยังไม่มีสินค้า"}
+function addVariant(variant_id,qty=1,replace=false){if(replace)cart={};let v=variants.find(x=>x.id===variant_id),p=products.find(x=>x.id===v.product_id);if(!cart[variant_id])cart[variant_id]={variant_id,product_id:p.id,product_name:p.name,variant_label:v.label,price:+v.price,qty:0};cart[variant_id].qty=Math.min(+v.stock,cart[variant_id].qty+qty);totals();render()}
+function openOption(pid,buy=false){let p=products.find(x=>x.id===pid),vs=getVariants(pid);pending={pid,variant_id:vs[0].id,qty:1,buy};$("optionTitle").textContent=p.name;$("optionVariants").innerHTML=vs.map((v,i)=>`<button class="${i===0?"active":""}" data-v="${v.id}" ${+v.stock<1?"disabled":""}>${v.label} · ${money(v.price)} · เหลือ ${v.stock}</button>`).join("");$("optQty").textContent=1;calcOpt();$("optionSheetWrap").classList.remove("hidden")}
+function calcOpt(){let v=variants.find(x=>x.id===pending.variant_id);$("optTotal").textContent=money(+v.price*pending.qty)}
 
 document.addEventListener("click",e=>{
-  const cat=e.target.closest("[data-cat]");
-  if(cat){selectedCat=cat.dataset.cat;document.querySelectorAll("[data-cat]").forEach(x=>x.classList.toggle("active",x===cat));renderProducts();return;}
-  const vb=e.target.closest("[data-p]");
-  if(vb){
-    const card=vb.closest(".product-card"); card.dataset.variant=vb.dataset.v;
-    card.querySelectorAll(".variant-btn").forEach(x=>x.classList.toggle("active",x===vb));
-    const [,v]=getVariant(vb.dataset.p,vb.dataset.v);
-    card.querySelector(".price-block").innerHTML=`<strong>${money(v.price)}</strong><span>/ ${v.label}</span>`; return;
-  }
-  const a=e.target.closest("[data-add]"); if(a){const card=a.closest(".product-card");add(a.dataset.add,card.dataset.variant);return;}
-  const b=e.target.closest("[data-buy]"); if(b){const card=b.closest(".product-card");add(b.dataset.buy,card.dataset.variant,true);openCart();return;}
-  const plus=e.target.closest("[data-plus]"); if(plus){cart[plus.dataset.plus].qty++;updateCart();return;}
-  const minus=e.target.closest("[data-minus]"); if(minus){const k=minus.dataset.minus;cart[k].qty--;if(cart[k].qty<=0)delete cart[k];updateCart();return;}
+  let c=e.target.closest("[data-cat]");if(c){selectedCat=c.dataset.cat;document.querySelectorAll("[data-cat]").forEach(x=>x.classList.toggle("active",x===c));render();return}
+  let a=e.target.closest("[data-add]");if(a){let vs=getVariants(a.dataset.add);if(vs.length>1)openOption(a.dataset.add,false);else addVariant(vs[0].id);return}
+  let b=e.target.closest("[data-buy]");if(b){openOption(b.dataset.buy,true);return}
+  let v=e.target.closest("[data-v]");if(v&&pending){pending.variant_id=v.dataset.v;document.querySelectorAll("#optionVariants button").forEach(x=>x.classList.toggle("active",x===v));calcOpt();return}
+  let pl=e.target.closest("[data-plus]");if(pl){let v=variants.find(x=>x.id===pl.dataset.plus);cart[v.id].qty=Math.min(+v.stock,cart[v.id].qty+1);totals();render();return}
+  let mi=e.target.closest("[data-minus]");if(mi){let k=mi.dataset.minus;cart[k].qty--;if(cart[k].qty<1)delete cart[k];totals();render();return}
+  let cp=e.target.closest("[data-cardplus]");if(cp){let item=Object.values(cart).find(x=>x.product_id===cp.dataset.cardplus);if(item)addVariant(item.variant_id);return}
+  let cm=e.target.closest("[data-cardminus]");if(cm){let item=Object.values(cart).find(x=>x.product_id===cm.dataset.cardminus);if(item){item.qty--;if(item.qty<1)delete cart[item.variant_id];totals();render()}return}
 });
-$("search").addEventListener("input",renderProducts);
-$("shopNow").addEventListener("click",()=>$("productSection").scrollIntoView({behavior:"smooth",block:"start"}));
-$("cartBar").addEventListener("click",openCart);
-$("closeSheet").addEventListener("click",closeCart);
-$("sheetWrap").addEventListener("click",e=>{if(e.target===$("sheetWrap"))closeCart();});
+$("search").oninput=render;$("shopNow").onclick=()=>$("productSection").scrollIntoView({behavior:"smooth"});$("cartBar").onclick=()=>$("cartSheetWrap").classList.remove("hidden");$("closeCart").onclick=()=>$("cartSheetWrap").classList.add("hidden");$("closeOption").onclick=()=>$("optionSheetWrap").classList.add("hidden");
+$("optMinus").onclick=()=>{pending.qty=Math.max(1,pending.qty-1);$("optQty").textContent=pending.qty;calcOpt()};$("optPlus").onclick=()=>{let v=variants.find(x=>x.id===pending.variant_id);pending.qty=Math.min(+v.stock,pending.qty+1);$("optQty").textContent=pending.qty;calcOpt()};$("confirmAdd").onclick=()=>{addVariant(pending.variant_id,pending.qty,pending.buy);$("optionSheetWrap").classList.add("hidden");if(pending.buy)$("cartSheetWrap").classList.remove("hidden")};$("deliveryType").onchange=()=>$("nearbyWrap").classList.toggle("hidden",$("deliveryType").value!=="nearby");
 
-$("deliveryType").addEventListener("change",()=>{
-  $("nearbyWrap").classList.toggle("hidden",$("deliveryType").value!=="nearby");
-});
-
-function buildOrderText(orderNo){
-  const itemLines=lines().map((x,i)=>`${i+1}. ${x.name} (${x.variantLabel}) x${x.qty} = ${x.price*x.qty} บาท`);
-  const pickup=$("pickupTime").value.trim()||"-";
-  const note=$("note").value.trim()||"-";
-  const deliveryType=$("deliveryType").value;
-  const deliveryText=deliveryType==="lobby"
-    ? "ล็อบบี้ IDEO MOBI EASTGATE"
-    : `พื้นที่ใกล้เคียง${$("nearbyLocation").value.trim()?` - ${$("nearbyLocation").value.trim()}`:""}`;
-
-  return [
-    `มีสุขส่งถึง | ออเดอร์ใหม่`,
-    orderNo ? `เลขออเดอร์: ${orderNo}` : null,
-    ``,
-    `รายการสินค้า`,
-    ...itemLines,
-    ``,
-    `ยอดรวม`,
-    `${priceTotal()} บาท`,
-    ``,
-    `ข้อมูลผู้สั่ง`,
-    `ชื่อ: ${$("name").value.trim()}`,
-    `ห้อง: ${$("room").value.trim()}`,
-    `โทร: ${$("phone").value.trim()}`,
-    `เวลารับของ: ${pickup}`,
-    ``,
-    `จุดรับสินค้า`,
-    deliveryText,
-    ``,
-    `หมายเหตุ`,
-    note
-  ].filter(x=>x!==null).join("\n");
-}
-
-$("orderLine").addEventListener("click", async()=>{
-  if(!lines().length){ alert("กรุณาเลือกสินค้าอย่างน้อย 1 รายการ"); return; }
-  if(!$("name").value.trim() || !$("room").value.trim() || !$("phone").value.trim()){
-    alert("กรอกชื่อ เลขห้อง และเบอร์โทรก่อนนะคะ"); return;
-  }
-  if($("deliveryType").value==="nearby" && !$("nearbyLocation").value.trim()){
-    alert("กรุณาระบุจุดรับสินค้า"); return;
-  }
-
-  // TODO Cody: save order + order_items to Supabase FIRST, then return order_no.
-  const orderNo="";
-
-  const text=buildOrderText(orderNo);
-  const lineUrl=`https://line.me/R/oaMessage/@435ktnsf/?${encodeURIComponent(text)}`;
-  window.location.href=lineUrl;
-});
-
-renderProducts();updateCart();
+$("orderLine").onclick=async()=>{
+  let arr=Object.values(cart);if(!arr.length)return alert("กรุณาเลือกสินค้า");
+  if(!$("name").value.trim()||!$("room").value.trim()||!$("phone").value.trim())return alert("กรอกชื่อ เลขห้อง และเบอร์โทรก่อนนะคะ");
+  let customer=await MeeSookStore.createCustomer({name:$("name").value.trim(),room:$("room").value.trim(),phone:$("phone").value.trim()});
+  let delivery=$("deliveryType").value==="lobby"?"ล็อบบี้ IDEO MOBI EASTGATE":$("nearbyLocation").value.trim();
+  let total=arr.reduce((s,x)=>s+x.price*x.qty,0);
+  let result=await MeeSookStore.createOrder({order:{customer_id:customer.id,customer_name:customer.name,room:customer.room,phone:customer.phone,pickup_time:$("pickupTime").value.trim(),delivery_type:$("deliveryType").value,delivery_location:delivery,note:$("note").value.trim(),subtotal:total,total,status:"pending",payment_status:"pending",payment_method:"โอนเงิน",channel:"Web"},items:arr.map(x=>({variant_id:x.variant_id,product_name:x.product_name,variant_label:x.variant_label,unit_price:x.price,qty:x.qty}))});
+  let text=[`มีสุขส่งถึง | ออเดอร์ใหม่`,`เลขออเดอร์: ${result.order_no}`,"","รายการสินค้า",...arr.map((x,i)=>`${i+1}. ${x.product_name} (${x.variant_label}) x${x.qty} = ${x.price*x.qty} บาท`),"",`ยอดรวม`,` ${total} บาท`,"","ข้อมูลผู้สั่ง",`ชื่อ: ${customer.name}`,`ห้อง: ${customer.room}`,`โทร: ${customer.phone}`,`เวลารับของ: ${$("pickupTime").value.trim()||"-"}`,"","จุดรับสินค้า",delivery,"","หมายเหตุ",$("note").value.trim()||"-"].join("\n");
+  location.href=`https://line.me/R/oaMessage/@435ktnsf/?${encodeURIComponent(text)}`;
+};
+boot();
