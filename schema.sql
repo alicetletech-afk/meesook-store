@@ -1,4 +1,4 @@
--- มีสุขส่งถึง / Supabase schema
+-- mesook / Supabase schema
 -- Run this whole file in Supabase SQL Editor.
 -- Designed so storefront + CMS + POS use the SAME data source.
 

@@ -1,4 +1,4 @@
-# มีสุขส่งถึง — Full Suite v2 / Supabase-ready
+# mesook — Full Suite v2 / Supabase-ready
 
 ## หลักสำคัญ
 หน้าร้าน + CMS + POS ใช้ **canonical data model เดียวกัน** ผ่าน `store.js`

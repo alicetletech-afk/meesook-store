@@ -167,7 +167,7 @@ $("orderLine").onclick=async()=>{
     order:{customer_id:customer.id,customer_name:customer.name,room:customer.room,phone:customer.phone,pickup_time:$("pickupTime").value.trim(),delivery_type:$("deliveryType").value,delivery_location:delivery,note:$("note").value.trim(),subtotal:total,total,status:"pending",payment_status:"pending",payment_method:"โอนเงิน",channel:"Web"},
     items:arr.map(x=>({variant_id:x.variant_id,product_name:x.product_name,variant_label:x.variant_label,unit_price:x.price,qty:x.qty}))
   });
-  const text=[`มีสุขส่งถึง | ออเดอร์ใหม่`,`เลขออเดอร์: ${result.order_no}`,"","รายการสินค้า",...arr.map((x,i)=>`${i+1}. ${x.product_name} (${x.variant_label}) x${x.qty} = ${x.price*x.qty} บาท`),"",`ยอดรวม`,`${total} บาท`,"","ข้อมูลผู้สั่ง",`ชื่อ: ${customer.name}`,`ห้อง: ${customer.room}`,`โทร: ${customer.phone}`,`เวลารับของ: ${$("pickupTime").value.trim()||"-"}`,"","จุดรับสินค้า",delivery,"","หมายเหตุ",$("note").value.trim()||"-"].join("\n");
+  const text=[`mesook | ออเดอร์ใหม่`,`เลขออเดอร์: ${result.order_no}`,"","รายการสินค้า",...arr.map((x,i)=>`${i+1}. ${x.product_name} (${x.variant_label}) x${x.qty} = ${x.price*x.qty} บาท`),"",`ยอดรวม`,`${total} บาท`,"","ข้อมูลผู้สั่ง",`ชื่อ: ${customer.name}`,`ห้อง: ${customer.room}`,`โทร: ${customer.phone}`,`เวลารับของ: ${$("pickupTime").value.trim()||"-"}`,"","จุดรับสินค้า",delivery,"","หมายเหตุ",$("note").value.trim()||"-"].join("\n");
   location.href=`https://line.me/R/oaMessage/@435ktnsf/?${encodeURIComponent(text)}`;
 };
 
