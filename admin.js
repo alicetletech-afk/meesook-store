@@ -1,4 +1,5 @@
 let snap,products=[],variants=[],customers=[],orders=[],orderItems=[],cms={},pc={};
+let newOrderCart={}, newOrderCustomerMode='existing';
 const $=x=>document.getElementById(x),money=n=>'฿'+Number(n).toLocaleString('th-TH'),st={pending:'รอชำระ',paid:'ชำระแล้ว',ready:'พร้อมส่ง',done:'สำเร็จ',cancelled:'ยกเลิก'},ct={water:'น้ำดื่ม',rice:'ข้าวสาร',noodle:'มาม่า',other:'อื่นๆ'};
 let confirmResolver=null;
 function openConfirm({title="ยืนยันรายการ",text="ต้องการดำเนินการต่อใช่ไหม?",okText="ยืนยัน"}={}){
@@ -21,7 +22,30 @@ function drawSalesChart(){let c=$('salesChart'),ctx=c.getContext('2d'),W=c.width
 function drawStatusChart(){let c=$('statusChart'),ctx=c.getContext('2d'),W=c.width,H=c.height,counts=Object.keys(st).map(k=>({k,label:st[k],n:orders.filter(o=>o.status===k).length})),total=Math.max(1,counts.reduce((s,x)=>s+x.n,0)),cx=W*.36,cy=H*.48,r=78,start=-Math.PI/2,colors=['#f2cd58','#4b8a6c','#6680a0','#7aa087','#c96a64'];ctx.clearRect(0,0,W,H);counts.forEach((x,i)=>{let a=(x.n/total)*Math.PI*2;ctx.beginPath();ctx.moveTo(cx,cy);ctx.arc(cx,cy,r,start,start+a);ctx.closePath();ctx.fillStyle=colors[i];ctx.fill();start+=a});ctx.beginPath();ctx.arc(cx,cy,r*.56,0,Math.PI*2);ctx.fillStyle='#fffdf8';ctx.fill();ctx.fillStyle='#303a34';ctx.font='bold 24px sans-serif';ctx.textAlign='center';ctx.fillText(total,cx,cy+7);ctx.textAlign='left';ctx.font='12px sans-serif';counts.forEach((x,i)=>{let y=45+i*34;ctx.fillStyle=colors[i];ctx.fillRect(W*.66,y-9,12,12);ctx.fillStyle='#303a34';ctx.fillText(`${x.label} ${x.n}`,W*.66+20,y)})}
 function pos(){let q=$('search').value.toLowerCase(),rows=variants.map(v=>({v,p:products.find(p=>p.id===v.product_id)})).filter(x=>x.p&&x.p.active!==false&&x.v.active!==false&&`${x.p.name} ${x.v.label}`.toLowerCase().includes(q));$('catalog').innerHTML=rows.map(({p,v})=>`<button class=prod data-pv="${v.id}" ${+v.stock<1?'disabled':''}><strong>${p.name}</strong><span>${v.label} · เหลือ ${v.stock}</span><b>${money(v.price)}</b></button>`).join('');$('cart').innerHTML=Object.values(pc).map(x=>`<div class=row><span><b>${x.product_name}</b><br><small>${x.variant_label} · ${money(x.price)}</small></span><span class=qty><button data-m="${x.variant_id}">−</button><b>${x.qty}</b><button data-a="${x.variant_id}">+</button></span></div>`).join('')||'<div class=row>ยังไม่มีสินค้า</div>';$('total').textContent=money(Object.values(pc).reduce((s,x)=>s+x.price*x.qty,0))}
 function ro(){let f=$('filter').value,l=f==='all'?orders:orders.filter(x=>x.status===f);$('ordertable').innerHTML=`<table><tr><th>ออเดอร์</th><th>ลูกค้า</th><th>ห้อง</th><th>ช่องทาง</th><th>ยอด</th><th>สถานะ</th><th></th></tr>${[...l].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).map(o=>`<tr><td><b>${o.order_no}</b></td><td>${o.customer_name||'-'}<br><span class=subtle>${o.phone||''}</span></td><td>${o.room||'-'}</td><td>${o.channel||'-'}</td><td>${money(o.total)}</td><td><span class="tag ${o.status}">${st[o.status]}</span></td><td><div class=actions><button data-editorder="${o.id}">แก้ไข</button><button class=danger data-delorder="${o.id}">ลบ</button></div></td></tr>`).join('')}</table>`}
-function rc(){let q=$('customerSearch').value.toLowerCase().trim(),l=customers.filter(c=>!q||`${c.name} ${c.room} ${c.phone}`.toLowerCase().includes(q));$('customertable').innerHTML=`<table><tr><th>ลูกค้า</th><th>ห้อง</th><th>เบอร์โทร</th><th>ออเดอร์</th><th>ยอดซื้อรวม</th><th>ล่าสุด</th></tr>${l.map(c=>{let os=orders.filter(o=>o.customer_id===c.id),sum=os.filter(paid).reduce((s,o)=>s+(+o.total||0),0),last=os.sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];return `<tr><td><b>${c.name||'-'}</b></td><td>${c.room||'-'}</td><td>${c.phone||'-'}</td><td>${os.length}</td><td>${money(sum)}</td><td>${last?new Date(last.created_at).toLocaleString('th-TH'):'-'}</td></tr>`}).join('')}</table>`}
+function rc(){
+  let q=$('customerSearch').value.toLowerCase().trim(),
+      l=customers.filter(c=>!q||`${c.name} ${c.room} ${c.phone}`.toLowerCase().includes(q));
+  $('customertable').innerHTML=`<table>
+    <tr><th>ลูกค้า</th><th>ห้อง</th><th>เบอร์โทร</th><th>ออเดอร์</th><th>ยอดซื้อรวม</th><th>ล่าสุด</th><th></th></tr>
+    ${l.map(c=>{
+      let os=orders.filter(o=>o.customer_id===c.id),
+          sum=os.filter(paid).reduce((s,o)=>s+(+o.total||0),0),
+          last=[...os].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0];
+      return `<tr>
+        <td><b>${c.name||'-'}</b></td>
+        <td>${c.room||'-'}</td>
+        <td>${c.phone||'-'}</td>
+        <td>${os.length}</td>
+        <td>${money(sum)}</td>
+        <td>${last?new Date(last.created_at).toLocaleString('th-TH'):'-'}</td>
+        <td><div class="customer-actions">
+          <button data-editcustomer="${c.id}">แก้ไข</button>
+          <button class="danger" data-delcustomer="${c.id}">ลบ</button>
+        </div></td>
+      </tr>`
+    }).join('')}
+  </table>`
+}
 function rs(){
   $('stocktable').innerHTML=`<table>
     <tr><th>สินค้า</th><th>ตัวเลือก</th><th>SKU</th><th>ราคา</th><th>สต๊อก</th><th></th></tr>
@@ -43,7 +67,123 @@ function rs(){
 }
 function fillCms(){$('hero').value=cms.hero_title||'';$('delivery').value=cms.delivery_copy||'';$('help').value=cms.help_title||'';$('helpBody').value=cms.help_body||'';$('phero').textContent=cms.hero_title||'';$('pdelivery').textContent=cms.delivery_copy||''}
 
-document.addEventListener('click',async e=>{let n=e.target.closest('[data-v]');if(n){document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===n));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===n.dataset.v));$('title').textContent=n.textContent;return}let pv=e.target.closest('[data-pv]');if(pv){let v=variants.find(x=>x.id===pv.dataset.pv),p=products.find(x=>x.id===v.product_id);if(!pc[v.id])pc[v.id]={variant_id:v.id,product_name:p.name,variant_label:v.label,price:+v.price,qty:0};pc[v.id].qty=Math.min(+v.stock,pc[v.id].qty+1);pos();return}let a=e.target.closest('[data-a]');if(a){let v=variants.find(x=>x.id===a.dataset.a);pc[v.id].qty=Math.min(+v.stock,pc[v.id].qty+1);pos();return}let m=e.target.closest('[data-m]');if(m){pc[m.dataset.m].qty--;if(pc[m.dataset.m].qty<1)delete pc[m.dataset.m];pos();return}let eo=e.target.closest('[data-editorder]');if(eo){openOrder(eo.dataset.editorder);return}let del=e.target.closest('[data-delorder]');if(del){let o=orders.find(x=>x.id===del.dataset.delorder);let ok=await openConfirm({title:"ลบออเดอร์?",text:`ออเดอร์ ${o.order_no} จะถูกลบออกจากระบบ และไม่สามารถย้อนกลับได้`,okText:"ลบออเดอร์"});if(ok){await MeeSookStore.deleteOrder(o.id);await refresh()}return}let ep=e.target.closest('[data-editproduct]');if(ep){openProduct(ep.dataset.editproduct);return}
+
+function openCustomerEditor(id){
+  const c=customers.find(x=>x.id===id);
+  if(!c) return;
+  $('ceid').value=c.id;
+  $('cname').value=c.name||'';
+  $('croom').value=c.room||'';
+  $('cphone').value=c.phone||'';
+  $('cline').value=c.line_display_name||'';
+  $('cnotes').value=c.notes||'';
+  $('customerModal').classList.remove('hidden');
+}
+
+function renderNewOrderCustomerSelect(){
+  $('newOrderCustomer').innerHTML=customers.length
+    ? customers.map(c=>`<option value="${c.id}">${c.name||'-'}${c.room?` · ${c.room}`:''}${c.phone?` · ${c.phone}`:''}</option>`).join('')
+    : '<option value="">ยังไม่มีลูกค้า</option>';
+  renderSelectedCustomerPreview();
+}
+
+function renderSelectedCustomerPreview(){
+  const c=customers.find(x=>x.id===$('newOrderCustomer').value);
+  $('selectedCustomerPreview').textContent=c
+    ? `${c.name||'-'} · ห้อง ${c.room||'-'} · ${c.phone||'-'}`
+    : 'ยังไม่ได้เลือกลูกค้า';
+}
+
+function renderNewOrderProducts(){
+  const q=$('newOrderProductSearch').value.toLowerCase().trim();
+  const rows=variants.map(v=>({v,p:products.find(p=>p.id===v.product_id)}))
+    .filter(({p,v})=>p&&p.active!==false&&v.active!==false&&(!q||`${p.name} ${v.label} ${v.sku||''}`.toLowerCase().includes(q)));
+  $('newOrderProducts').innerHTML=rows.map(({p,v})=>`<button type="button" class="order-product-btn" data-neworder-add="${v.id}" ${+v.stock<1?'disabled':''}>
+    <strong>${p.name}</strong>
+    <small>${v.label} · เหลือ ${v.stock}</small>
+    <b>${money(v.price)}</b>
+  </button>`).join('');
+}
+
+function renderNewOrderCart(){
+  const arr=Object.values(newOrderCart);
+  $('newOrderItems').innerHTML=arr.map(x=>`<div class="row">
+    <span><b>${x.product_name}</b><br><small>${x.variant_label} · ${money(x.price)}</small></span>
+    <span class="qty"><button type="button" data-neworder-minus="${x.variant_id}">−</button><b>${x.qty}</b><button type="button" data-neworder-plus="${x.variant_id}">+</button></span>
+  </div>`).join('')||'<div class="row">ยังไม่มีสินค้า</div>';
+  $('newOrderTotal').textContent=money(arr.reduce((s,x)=>s+x.price*x.qty,0));
+}
+
+function openNewOrder(){
+  newOrderCart={};
+  newOrderCustomerMode='existing';
+  document.querySelectorAll('[data-customer-mode]').forEach(b=>b.classList.toggle('active',b.dataset.customerMode==='existing'));
+  $('existingCustomerBox').classList.remove('hidden');
+  $('newCustomerBox').classList.add('hidden');
+  $('newCustomerName').value='';
+  $('newCustomerRoom').value='';
+  $('newCustomerPhone').value='';
+  $('newOrderProductSearch').value='';
+  $('newOrderStatus').value='pending';
+  $('newOrderPayment').value='โอนเงิน';
+  $('newOrderPickupTime').value='';
+  $('newOrderDeliveryType').value='lobby';
+  $('newOrderLocation').value='ล็อบบี้ IDEO MOBI EASTGATE';
+  $('newOrderNote').value='';
+  renderNewOrderCustomerSelect();
+  renderNewOrderProducts();
+  renderNewOrderCart();
+  $('newOrderModal').classList.remove('hidden');
+}
+
+document.addEventListener('click',async e=>{let n=e.target.closest('[data-v]');if(n){document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===n));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===n.dataset.v));$('title').textContent=n.textContent;return}let pv=e.target.closest('[data-pv]');if(pv){let v=variants.find(x=>x.id===pv.dataset.pv),p=products.find(x=>x.id===v.product_id);if(!pc[v.id])pc[v.id]={variant_id:v.id,product_name:p.name,variant_label:v.label,price:+v.price,qty:0};pc[v.id].qty=Math.min(+v.stock,pc[v.id].qty+1);pos();return}let a=e.target.closest('[data-a]');if(a){let v=variants.find(x=>x.id===a.dataset.a);pc[v.id].qty=Math.min(+v.stock,pc[v.id].qty+1);pos();return}let m=e.target.closest('[data-m]');if(m){pc[m.dataset.m].qty--;if(pc[m.dataset.m].qty<1)delete pc[m.dataset.m];pos();return}let eo=e.target.closest('[data-editorder]');if(eo){openOrder(eo.dataset.editorder);return}let del=e.target.closest('[data-delorder]');if(del){let o=orders.find(x=>x.id===del.dataset.delorder);let ok=await openConfirm({title:"ลบออเดอร์?",text:`ออเดอร์ ${o.order_no} จะถูกลบออกจากระบบ และไม่สามารถย้อนกลับได้`,okText:"ลบออเดอร์"});if(ok){await MeeSookStore.deleteOrder(o.id);await refresh()}return}let ec=e.target.closest('[data-editcustomer]');
+if(ec){openCustomerEditor(ec.dataset.editcustomer);return}
+let dc=e.target.closest('[data-delcustomer]');
+if(dc){
+  const c=customers.find(x=>x.id===dc.dataset.delcustomer);
+  const os=orders.filter(o=>o.customer_id===c.id);
+  const ok=await openConfirm({
+    title:'ลบข้อมูลลูกค้า?',
+    text:os.length
+      ? `${c.name||'ลูกค้ารายนี้'} มี ${os.length} ออเดอร์เดิม ออเดอร์จะยังอยู่ แต่ข้อมูล customer master จะถูกลบ`
+      : `${c.name||'ลูกค้ารายนี้'} จะถูกลบออกจากรายชื่อลูกค้า`,
+    okText:'ลบลูกค้า'
+  });
+  if(ok){
+    await MeeSookStore.remove('customers',c.id);
+    await refresh();
+    showToast('ลบข้อมูลลูกค้าแล้ว');
+  }
+  return
+}
+let ao=e.target.closest('#addOrderBtn');if(ao){openNewOrder();return}
+let cmode=e.target.closest('[data-customer-mode]');
+if(cmode){
+  newOrderCustomerMode=cmode.dataset.customerMode;
+  document.querySelectorAll('[data-customer-mode]').forEach(b=>b.classList.toggle('active',b===cmode));
+  $('existingCustomerBox').classList.toggle('hidden',newOrderCustomerMode!=='existing');
+  $('newCustomerBox').classList.toggle('hidden',newOrderCustomerMode!=='new');
+  return
+}
+let noa=e.target.closest('[data-neworder-add]');
+if(noa){
+  const v=variants.find(x=>x.id===noa.dataset.neworderAdd),p=products.find(x=>x.id===v.product_id);
+  if(!newOrderCart[v.id]) newOrderCart[v.id]={variant_id:v.id,product_name:p.name,variant_label:v.label,price:+v.price,qty:0};
+  newOrderCart[v.id].qty=Math.min(+v.stock,newOrderCart[v.id].qty+1);
+  renderNewOrderCart();return
+}
+let nop=e.target.closest('[data-neworder-plus]');
+if(nop){
+  const v=variants.find(x=>x.id===nop.dataset.neworderPlus);
+  newOrderCart[v.id].qty=Math.min(+v.stock,newOrderCart[v.id].qty+1);
+  renderNewOrderCart();return
+}
+let nom=e.target.closest('[data-neworder-minus]');
+if(nom){
+  const x=newOrderCart[nom.dataset.neworderMinus];x.qty--;if(x.qty<1)delete newOrderCart[x.variant_id];
+  renderNewOrderCart();return
+}
+let ep=e.target.closest('[data-editproduct]');if(ep){openProduct(ep.dataset.editproduct);return}
 let dp=e.target.closest('#deleteProductBtn');
 if(dp){
   const pid=$('peid').value;
@@ -62,6 +202,82 @@ if(dp){
   return
 }let cl=e.target.closest('[data-close]');if(cl){$(cl.dataset.close).classList.add('hidden');return}});
 $('search').oninput=pos;$('filter').onchange=ro;$('customerSearch').oninput=rc;
+$('newOrderCustomer').onchange=renderSelectedCustomerPreview;
+$('newOrderProductSearch').oninput=renderNewOrderProducts;
+$('newOrderDeliveryType').onchange=()=>{
+  const type=$('newOrderDeliveryType').value;
+  $('newOrderLocation').value=type==='lobby'?'ล็อบบี้ IDEO MOBI EASTGATE':type==='counter'?'หน้าร้าน':'';
+};
+
+$('customerForm').onsubmit=async e=>{
+  e.preventDefault();
+  const id=$('ceid').value;
+  const old=customers.find(x=>x.id===id);
+  await MeeSookStore.upsert('customers',{
+    ...(old||{}),
+    id,
+    name:$('cname').value.trim(),
+    room:$('croom').value.trim(),
+    phone:$('cphone').value.trim(),
+    line_display_name:$('cline').value.trim(),
+    notes:$('cnotes').value.trim()
+  });
+  $('customerModal').classList.add('hidden');
+  await refresh();
+  showToast('บันทึกข้อมูลลูกค้าแล้ว');
+};
+
+$('newOrderForm').onsubmit=async e=>{
+  e.preventDefault();
+  const items=Object.values(newOrderCart);
+  if(!items.length){showToast('เพิ่มสินค้าในออเดอร์ก่อน');return}
+
+  let customer;
+  if(newOrderCustomerMode==='existing'){
+    customer=customers.find(c=>c.id===$('newOrderCustomer').value);
+    if(!customer){showToast('เลือกลูกค้าก่อน');return}
+  }else{
+    const name=$('newCustomerName').value.trim();
+    if(!name){showToast('กรอกชื่อลูกค้าใหม่ก่อน');return}
+    customer=await MeeSookStore.createCustomer({
+      name,
+      room:$('newCustomerRoom').value.trim(),
+      phone:$('newCustomerPhone').value.trim()
+    });
+  }
+
+  const total=items.reduce((s,x)=>s+x.price*x.qty,0);
+  const status=$('newOrderStatus').value;
+  await MeeSookStore.createOrder({
+    order:{
+      customer_id:customer.id,
+      customer_name:customer.name,
+      room:customer.room||'',
+      phone:customer.phone||'',
+      pickup_time:$('newOrderPickupTime').value.trim(),
+      delivery_type:$('newOrderDeliveryType').value,
+      delivery_location:$('newOrderLocation').value.trim(),
+      note:$('newOrderNote').value.trim(),
+      subtotal:total,total,
+      status,
+      payment_status:['paid','ready','done'].includes(status)?'paid':'pending',
+      payment_method:$('newOrderPayment').value,
+      channel:'Admin'
+    },
+    items:items.map(x=>({
+      variant_id:x.variant_id,
+      product_name:x.product_name,
+      variant_label:x.variant_label,
+      unit_price:x.price,
+      qty:x.qty
+    }))
+  });
+
+  $('newOrderModal').classList.add('hidden');
+  await refresh();
+  showToast('สร้างออเดอร์แล้ว');
+};
+
 $('checkout').onclick=async()=>{
   let items=Object.values(pc);
   if(!items.length){showToast('ยังไม่มีสินค้าในรายการขาย');return}

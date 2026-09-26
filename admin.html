@@ -6,7 +6,7 @@
 <main><header><div><small>ADMIN</small><h1 id="title">ภาพรวมวันนี้</h1></div><span class="online">● ระบบพร้อมขาย</span></header>
 <section id="dash" class="view active"><div class="metrics"><article><span>ยอดขายวันนี้</span><b id="sales">฿0</b><small>ชำระแล้ว</small></article><article><span>ออเดอร์วันนี้</span><b id="oc">0</b><small>ทุกช่องทาง</small></article><article><span>ลูกค้าทั้งหมด</span><b id="cc">0</b><small>จากฐานเดียวกับหน้าร้าน</small></article><article><span>สินค้าใกล้หมด</span><b id="low">0</b><small>variant เหลือ ≤ 5</small></article></div><div class="chart-grid"><div class="panel"><div class="ph"><h2>ยอดขาย 7 วันล่าสุด</h2><small>SALES TREND</small></div><canvas id="salesChart" width="700" height="260"></canvas></div><div class="panel"><div class="ph"><h2>สถานะออเดอร์</h2><small>ORDER STATUS</small></div><canvas id="statusChart" width="380" height="260"></canvas></div></div><div class="cols"><div class="panel"><h2>ออเดอร์ล่าสุด</h2><div id="recent"></div></div><div class="panel"><h2>ต้องเติมสต๊อก</h2><div id="lowlist"></div></div></div></section>
 <section id="pos" class="view"><div class="pos"><div class="panel"><div class="ph"><h2>เลือกสินค้า</h2><input id="search" placeholder="ค้นหา"></div><div id="catalog" class="catalog"></div></div><div class="panel cart"><h2>รายการขาย</h2><div id="cart"></div><div class="total"><span>ยอดรวม</span><b id="total">฿0</b></div><div class="two"><label>ชื่อลูกค้า<input id="customer" placeholder="ชื่อลูกค้า"></label><label>เลขห้อง<input id="posRoom" placeholder="เช่น A1208"></label></div><label>เบอร์โทร<input id="posPhone" placeholder="08x-xxx-xxxx"></label><label>ชำระ<select id="payment"><option>โอนเงิน</option><option>เงินสด</option></select></label><button class="primary" id="checkout">บันทึกการขาย</button></div></div></section>
-<section id="orders" class="view"><div class="panel"><div class="ph"><h2>จัดการออเดอร์</h2><select id="filter"><option value="all">ทั้งหมด</option><option value="pending">รอชำระ</option><option value="paid">ชำระแล้ว</option><option value="ready">พร้อมส่ง</option><option value="done">สำเร็จ</option><option value="cancelled">ยกเลิก</option></select></div><div id="ordertable" class="table"></div></div></section>
+<section id="orders" class="view"><div class="panel"><div class="ph"><h2>จัดการออเดอร์</h2><div class="toolbar"><button id="addOrderBtn">+ เพิ่มออเดอร์</button><select id="filter"><option value="all">ทั้งหมด</option><option value="pending">รอชำระ</option><option value="paid">ชำระแล้ว</option><option value="ready">พร้อมส่ง</option><option value="done">สำเร็จ</option><option value="cancelled">ยกเลิก</option></select></div></div><div id="ordertable" class="table"></div></div></section>
 <section id="customers" class="view"><div class="panel"><div class="ph"><h2>ข้อมูลลูกค้า</h2><input id="customerSearch" placeholder="ค้นชื่อ / ห้อง / เบอร์"></div><div id="customertable" class="table"></div></div></section>
 <section id="stock" class="view"><div class="panel"><div class="ph"><h2>สินค้าและสต๊อก</h2><button id="addp">+ เพิ่มสินค้า</button></div><div id="stocktable" class="table"></div></div></section>
 <section id="cms" class="view"><div class="cols"><div class="panel"><h2>ข้อความหน้าเว็บ</h2><label>หัวข้อ Hero<input id="hero"></label><label>ข้อความจัดส่ง<input id="delivery"></label><label>Help Title<input id="help"></label><label>Help Body<input id="helpBody"></label><button class="primary" id="savecms">บันทึก CMS</button></div><div class="panel"><small>LIVE PREVIEW</small><div class="preview"><em>ส่งฟรีที่ล็อบบี้</em><h2 id="phero"></h2><p id="pdelivery"></p><button>เลือกซื้อสินค้า</button></div></div></div></section>
@@ -100,6 +100,104 @@
       <button type="button" id="deleteProductBtn" class="danger-outline hidden">ลบสินค้า</button>
       <button class="primary" type="submit">บันทึกสินค้า</button>
     </div>
+  </form>
+</div>
+
+
+<div class="modal hidden" id="customerModal">
+  <form id="customerForm" class="small-editor">
+    <div class="ph modal-title-row">
+      <div><small>CUSTOMER</small><h2>แก้ไขข้อมูลลูกค้า</h2></div>
+      <button type="button" data-close="customerModal">×</button>
+    </div>
+    <input type="hidden" id="ceid">
+    <label>ชื่อลูกค้า<input id="cname" required></label>
+    <div class="two">
+      <label>เลขห้อง<input id="croom" placeholder="เช่น A1208"></label>
+      <label>เบอร์โทร<input id="cphone" placeholder="08x-xxx-xxxx"></label>
+    </div>
+    <label>LINE Display Name<input id="cline"></label>
+    <label>หมายเหตุ<textarea id="cnotes" rows="3"></textarea></label>
+    <button class="primary" type="submit">บันทึกข้อมูลลูกค้า</button>
+  </form>
+</div>
+
+<div class="modal hidden" id="newOrderModal">
+  <form id="newOrderForm" class="order-create-editor">
+    <div class="ph modal-title-row">
+      <div><small>NEW ORDER</small><h2>เพิ่มออเดอร์จากหลังบ้าน</h2></div>
+      <button type="button" data-close="newOrderModal">×</button>
+    </div>
+
+    <div class="customer-mode-switch">
+      <button type="button" class="active" data-customer-mode="existing">เลือกลูกค้าเดิม</button>
+      <button type="button" data-customer-mode="new">เพิ่มลูกค้าใหม่</button>
+    </div>
+
+    <section id="existingCustomerBox">
+      <label>เลือกลูกค้า
+        <select id="newOrderCustomer"></select>
+      </label>
+      <div id="selectedCustomerPreview" class="selected-customer-preview"></div>
+    </section>
+
+    <section id="newCustomerBox" class="hidden">
+      <div class="two">
+        <label>ชื่อลูกค้า<input id="newCustomerName"></label>
+        <label>เลขห้อง<input id="newCustomerRoom"></label>
+      </div>
+      <label>เบอร์โทร<input id="newCustomerPhone"></label>
+    </section>
+
+    <div class="order-builder-grid">
+      <section>
+        <div class="ph">
+          <div><small>PRODUCTS</small><h3>เพิ่มสินค้า</h3></div>
+          <input id="newOrderProductSearch" placeholder="ค้นหาสินค้า">
+        </div>
+        <div id="newOrderProducts" class="order-product-list"></div>
+      </section>
+
+      <section class="order-create-cart">
+        <div class="ph"><div><small>ORDER ITEMS</small><h3>รายการ</h3></div></div>
+        <div id="newOrderItems"></div>
+        <div class="total"><span>ยอดรวม</span><b id="newOrderTotal">฿0</b></div>
+      </section>
+    </div>
+
+    <div class="two">
+      <label>สถานะ
+        <select id="newOrderStatus">
+          <option value="pending">รอชำระ</option>
+          <option value="paid">ชำระแล้ว</option>
+          <option value="ready">พร้อมส่ง</option>
+          <option value="done">สำเร็จ</option>
+        </select>
+      </label>
+      <label>วิธีชำระ
+        <select id="newOrderPayment">
+          <option>โอนเงิน</option>
+          <option>เงินสด</option>
+          <option>อื่นๆ</option>
+        </select>
+      </label>
+    </div>
+
+    <div class="two">
+      <label>เวลารับ<input id="newOrderPickupTime" placeholder="เช่น 19:00"></label>
+      <label>จุดรับ
+        <select id="newOrderDeliveryType">
+          <option value="lobby">ล็อบบี้ IDEO MOBI EASTGATE</option>
+          <option value="nearby">พื้นที่ใกล้เคียง</option>
+          <option value="counter">หน้าร้าน</option>
+        </select>
+      </label>
+    </div>
+
+    <label>สถานที่รับ<input id="newOrderLocation" value="ล็อบบี้ IDEO MOBI EASTGATE"></label>
+    <label>หมายเหตุ<textarea id="newOrderNote" rows="2"></textarea></label>
+
+    <button class="primary" type="submit">สร้างออเดอร์</button>
   </form>
 </div>
 

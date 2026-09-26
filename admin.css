@@ -352,3 +352,110 @@ aside{display:flex;flex-direction:column}
     width:100%;
   }
 }
+
+
+/* v12 customer + order manager */
+.toolbar{display:flex;gap:8px;align-items:center}
+.toolbar button,.toolbar select{
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:9px;
+  padding:7px 9px;
+}
+
+.small-editor{width:min(520px,100%)!important}
+.small-editor textarea,
+.order-create-editor textarea{
+  width:100%;
+  border:1px solid var(--line);
+  background:#fff;
+  border-radius:10px;
+  padding:10px;
+  font:inherit;
+  resize:vertical;
+}
+
+.order-create-editor{
+  width:min(920px,100%)!important;
+}
+
+.customer-mode-switch{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:7px;
+  background:#F3ECD9;
+  padding:5px;
+  border-radius:12px;
+  margin-bottom:12px;
+}
+
+.customer-mode-switch button{
+  border:0;
+  border-radius:9px;
+  background:transparent;
+  padding:9px;
+  font-weight:700;
+  color:var(--muted);
+}
+
+.customer-mode-switch button.active{
+  background:#fff;
+  color:var(--gd);
+  box-shadow:0 3px 10px rgba(64,78,69,.06);
+}
+
+.selected-customer-preview{
+  margin-top:8px;
+  padding:10px 12px;
+  border-radius:11px;
+  background:#EDF3EE;
+  color:var(--gd);
+  font-size:11px;
+  min-height:36px;
+}
+
+.order-builder-grid{
+  display:grid;
+  grid-template-columns:1.25fr .75fr;
+  gap:12px;
+  margin:16px 0;
+}
+
+.order-product-list{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:7px;
+  margin-top:10px;
+  max-height:300px;
+  overflow:auto;
+}
+
+.order-product-btn{
+  border:1px solid var(--line);
+  background:#FBF7EC;
+  border-radius:12px;
+  padding:10px;
+  text-align:left;
+}
+.order-product-btn strong{display:block}
+.order-product-btn small{display:block;color:var(--muted);margin-top:2px}
+.order-product-btn b{display:block;color:var(--gd);margin-top:6px}
+.order-product-btn:disabled{opacity:.45}
+
+.order-create-cart{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+  background:#FFFDF8;
+}
+
+.customer-actions{
+  display:flex;
+  gap:5px;
+}
+
+@media(max-width:780px){
+  .order-builder-grid{grid-template-columns:1fr}
+  .order-product-list{grid-template-columns:1fr}
+  .toolbar{flex-wrap:wrap}
+}

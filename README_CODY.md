@@ -193,3 +193,36 @@ Production:
 - Cody ควร upload ไฟล์ไป Supabase Storage
 - บันทึก public/signed URL ลง `products.image_url`
 - หน้าร้านอ่าน `image_url` เดียวกับหลังบ้าน
+
+
+## v12 Customer + Admin Order Manager
+
+### Customers
+- แก้ชื่อ
+- แก้เลขห้อง
+- แก้เบอร์โทร
+- แก้ LINE display name / หมายเหตุ
+- ลบ customer master ได้
+- ถ้ามีออเดอร์เก่า ออเดอร์ยังอยู่ เพราะ orders เก็บ snapshot ของชื่อ/ห้อง/เบอร์ไว้ด้วย
+
+### Add Order from Admin
+ปุ่ม `+ เพิ่มออเดอร์` ในหน้า Orders
+
+เลือกลูกค้าได้ 2 แบบ:
+1. `เลือกลูกค้าเดิม`
+   - เลือกจาก customer table
+2. `เพิ่มลูกค้าใหม่`
+   - สร้าง customer ก่อน แล้วผูก order ใหม่กับ customer นั้น
+
+จากนั้น:
+- เพิ่มสินค้า / variant
+- +/- จำนวน
+- ยอดรวมอัตโนมัติ
+- status
+- payment method
+- pickup time
+- delivery location
+- note
+- save เข้า order source เดียวกับ Web / POS
+
+Production บน Supabase ใช้ `create_store_order()` เดิม จึงตัด stock แบบ transaction เดียวกัน
