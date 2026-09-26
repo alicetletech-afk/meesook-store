@@ -119,3 +119,16 @@ window.MEESOOK_SUPABASE = {
 
 **สำคัญ:** Storefront ห้าม expose stock quantity จริง แม้ว่าจะอ่าน stock จากฐานเดียวกัน
 เพื่อคำนวณ availability เท่านั้น
+
+
+## v4 UI polish
+- Browser `confirm()` สำหรับลบออเดอร์ถูกแทนด้วย custom modal แล้ว
+- ปิด modal ได้ด้วยปุ่มยกเลิก / คลิกพื้นหลัง / Esc
+- destructive action ใช้ปุ่มสีแดงชัดเจน
+
+
+## v5 dashboard compactness
+- ปรับ Dashboard ให้เตี้ยและกระชับขึ้น
+- ลดความสูงกราฟ
+- จำกัดความสูงส่วนออเดอร์ล่าสุด / ต้องเติมสต๊อก แล้วให้ scroll ได้
+- ลด padding ของ cards เพื่อไม่ให้หน้า overview ดูยืด

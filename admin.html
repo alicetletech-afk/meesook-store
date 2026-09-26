@@ -11,4 +11,19 @@
 
 <div class="modal hidden" id="orderModal"><form id="orderForm"><div class="ph"><h2>แก้ไขออเดอร์</h2><button type="button" data-close="orderModal">×</button></div><input type="hidden" id="oeid"><div class="two"><label>ชื่อลูกค้า<input id="oname"></label><label>ห้อง<input id="oroom"></label></div><div class="two"><label>เบอร์โทร<input id="ophone"></label><label>เวลารับ<input id="otime"></label></div><label>สถานะ<select id="ostatus"><option value="pending">รอชำระ</option><option value="paid">ชำระแล้ว</option><option value="ready">พร้อมส่ง</option><option value="done">สำเร็จ</option><option value="cancelled">ยกเลิก</option></select></label><label>สถานที่รับ<input id="olocation"></label><label>หมายเหตุ<input id="onote"></label><button class="primary">บันทึกออเดอร์</button></form></div>
 <div class="modal hidden" id="productModal"><form id="productForm"><div class="ph"><h2>แก้ไขสินค้า</h2><button type="button" data-close="productModal">×</button></div><input type="hidden" id="peid"><label>ชื่อสินค้า<input id="pname"></label><div class="two"><label>หมวด<select id="pcat"><option value="water">น้ำดื่ม</option><option value="rice">ข้าวสาร</option><option value="noodle">มาม่า</option><option value="other">อื่นๆ</option></select></label><label>รายละเอียด<input id="pdesc"></label></div><div id="variantEditor"></div><button class="primary">บันทึกสินค้า</button></form></div>
+
+<div class="modal hidden" id="confirmModal">
+  <section class="confirm-card">
+    <div class="confirm-icon">!</div>
+    <div class="confirm-copy">
+      <small>CONFIRM ACTION</small>
+      <h2 id="confirmTitle">ยืนยันการลบ</h2>
+      <p id="confirmText">ต้องการลบรายการนี้ใช่ไหม?</p>
+    </div>
+    <div class="confirm-actions">
+      <button type="button" class="ghost-btn" id="confirmCancel">ยกเลิก</button>
+      <button type="button" class="danger-btn" id="confirmOk">ลบรายการ</button>
+    </div>
+  </section>
+</div>
 <script src="supabase-config.js"></script><script src="store.js"></script><script src="admin.js"></script></body></html>
