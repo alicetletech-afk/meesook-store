@@ -27,16 +27,69 @@ function fillCms(){$('hero').value=cms.hero_title||'';$('delivery').value=cms.de
 
 document.addEventListener('click',async e=>{let n=e.target.closest('[data-v]');if(n){document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x===n));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===n.dataset.v));$('title').textContent=n.textContent;return}let pv=e.target.closest('[data-pv]');if(pv){let v=variants.find(x=>x.id===pv.dataset.pv),p=products.find(x=>x.id===v.product_id);if(!pc[v.id])pc[v.id]={variant_id:v.id,product_name:p.name,variant_label:v.label,price:+v.price,qty:0};pc[v.id].qty=Math.min(+v.stock,pc[v.id].qty+1);pos();return}let a=e.target.closest('[data-a]');if(a){let v=variants.find(x=>x.id===a.dataset.a);pc[v.id].qty=Math.min(+v.stock,pc[v.id].qty+1);pos();return}let m=e.target.closest('[data-m]');if(m){pc[m.dataset.m].qty--;if(pc[m.dataset.m].qty<1)delete pc[m.dataset.m];pos();return}let eo=e.target.closest('[data-editorder]');if(eo){openOrder(eo.dataset.editorder);return}let del=e.target.closest('[data-delorder]');if(del){let o=orders.find(x=>x.id===del.dataset.delorder);let ok=await openConfirm({title:"ลบออเดอร์?",text:`ออเดอร์ ${o.order_no} จะถูกลบออกจากระบบ และไม่สามารถย้อนกลับได้`,okText:"ลบออเดอร์"});if(ok){await MeeSookStore.deleteOrder(o.id);await refresh()}return}let ep=e.target.closest('[data-editproduct]');if(ep){openProduct(ep.dataset.editproduct);return}let cl=e.target.closest('[data-close]');if(cl){$(cl.dataset.close).classList.add('hidden');return}});
 $('search').oninput=pos;$('filter').onchange=ro;$('customerSearch').oninput=rc;
-$('checkout').onclick=async()=>{let items=Object.values(pc);if(!items.length)return alert('ยังไม่มีสินค้า');let name=$('customer').value.trim()||'ลูกค้าหน้าร้าน',phone=$('posPhone').value.trim(),customer=await MeeSookStore.createCustomer({name,room:'',phone});let total=items.reduce((s,x)=>s+x.price*x.qty,0);await MeeSookStore.createOrder({order:{customer_id:customer.id,customer_name:name,room:'',phone,pickup_time:'',delivery_type:'counter',delivery_location:'หน้าร้าน',note:'',subtotal:total,total,status:'paid',payment_status:'paid',payment_method:$('payment').value,channel:'POS'},items:items.map(x=>({variant_id:x.variant_id,product_name:x.product_name,variant_label:x.variant_label,unit_price:x.price,qty:x.qty}))});pc={};$('customer').value='';$('posPhone').value='';await $("confirmCancel").onclick=()=>closeConfirm(false);
-$("confirmOk").onclick=()=>closeConfirm(true);
-$("confirmModal").addEventListener("click",e=>{if(e.target===$("confirmModal"))closeConfirm(false)});
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("confirmModal").classList.contains("hidden"))closeConfirm(false)});
-refresh();alert('บันทึกการขายแล้ว')};
+$('checkout').onclick=async()=>{
+  let items=Object.values(pc);
+  if(!items.length){showToast('ยังไม่มีสินค้าในรายการขาย');return}
+  let name=$('customer').value.trim()||'ลูกค้าหน้าร้าน';
+  let phone=$('posPhone').value.trim();
+  let customer=await MeeSookStore.createCustomer({name,room:'',phone});
+  let total=items.reduce((s,x)=>s+x.price*x.qty,0);
+  await MeeSookStore.createOrder({
+    order:{
+      customer_id:customer.id,customer_name:name,room:'',phone,
+      pickup_time:'',delivery_type:'counter',delivery_location:'หน้าร้าน',note:'',
+      subtotal:total,total,status:'paid',payment_status:'paid',
+      payment_method:$('payment').value,channel:'POS'
+    },
+    items:items.map(x=>({
+      variant_id:x.variant_id,product_name:x.product_name,
+      variant_label:x.variant_label,unit_price:x.price,qty:x.qty
+    }))
+  });
+  pc={};
+  $('customer').value='';
+  $('posPhone').value='';
+  await refresh();
+  showToast('บันทึกการขายแล้ว');
+};
 $('stocktable').onchange=async e=>{if(e.target.dataset.stock){let v=variants.find(x=>x.id===e.target.dataset.stock);v.stock=Math.max(0,+e.target.value);await MeeSookStore.upsert('variants',v);await refresh()}};
 function openOrder(id){let o=orders.find(x=>x.id===id);$('oeid').value=o.id;$('oname').value=o.customer_name||'';$('oroom').value=o.room||'';$('ophone').value=o.phone||'';$('otime').value=o.pickup_time||'';$('ostatus').value=o.status;$('olocation').value=o.delivery_location||'';$('onote').value=o.note||'';$('orderModal').classList.remove('hidden')}
 $('orderForm').onsubmit=async e=>{e.preventDefault();await MeeSookStore.updateOrder($('oeid').value,{customer_name:$('oname').value,room:$('oroom').value,phone:$('ophone').value,pickup_time:$('otime').value,status:$('ostatus').value,payment_status:['paid','ready','done'].includes($('ostatus').value)?'paid':'pending',delivery_location:$('olocation').value,note:$('onote').value});$('orderModal').classList.add('hidden');await refresh()};
 function openProduct(pid){let p=products.find(x=>x.id===pid),vs=variants.filter(x=>x.product_id===pid);$('peid').value=p.id;$('pname').value=p.name;$('pcat').value=p.category;$('pdesc').value=p.description||'';$('variantEditor').innerHTML=vs.map(v=>`<div class=variant-edit data-vid="${v.id}"><input data-f=label value="${v.label}"><input data-f=price type=number value="${v.price}"><input data-f=stock type=number value="${v.stock}"><input data-f=sku value="${v.sku||''}"></div>`).join('');$('productModal').classList.remove('hidden')}
 $('productForm').onsubmit=async e=>{e.preventDefault();let pid=$('peid').value,p=products.find(x=>x.id===pid);await MeeSookStore.upsert('products',{...p,name:$('pname').value,category:$('pcat').value,description:$('pdesc').value});for(const row of document.querySelectorAll('.variant-edit')){let v=variants.find(x=>x.id===row.dataset.vid),fields=[...row.querySelectorAll('[data-f]')].reduce((o,i)=>(o[i.dataset.f]=i.value,o),{});await MeeSookStore.upsert('variants',{...v,label:fields.label,price:+fields.price,stock:+fields.stock,sku:fields.sku})}$('productModal').classList.add('hidden');await refresh()};
-$('savecms').onclick=async()=>{cms={...cms,hero_title:$('hero').value,delivery_copy:$('delivery').value,help_title:$('help').value,help_body:$('helpBody').value};await MeeSookStore.saveCms(cms);fillCms();alert('บันทึก CMS แล้ว — หน้าร้านจะอ่านข้อมูลชุดเดียวกัน')};
-['hero','delivery'].forEach(id=>$(id).oninput=()=>{if(id==='hero')$('phero').textContent=$('hero').value;else $('pdelivery').textContent=$('delivery').value});
-refresh();
+$('savecms').onclick=async()=>{
+  cms={
+    ...cms,
+    hero_title:$('hero').value.trim(),
+    delivery_copy:$('delivery').value.trim(),
+    help_title:$('help').value.trim(),
+    help_body:$('helpBody').value.trim()
+  };
+  await MeeSookStore.saveCms(cms);
+  fillCms();
+  showToast('บันทึก CMS แล้ว');
+};
+['hero','delivery'].forEach(id=>$(id).oninput=()=>{
+  if(id==='hero') $('phero').textContent=$('hero').value;
+  else $('pdelivery').textContent=$('delivery').value;
+});
+
+let toastTimer=null;
+function showToast(text){
+  $('toastText').textContent=text;
+  $('toast').classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>$('toast').classList.add('hidden'),2200);
+}
+
+$('confirmCancel').onclick=()=>closeConfirm(false);
+$('confirmOk').onclick=()=>closeConfirm(true);
+$('confirmModal').addEventListener('click',e=>{if(e.target===$('confirmModal'))closeConfirm(false)});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&!$('confirmModal').classList.contains('hidden')) closeConfirm(false);
+});
+
+refresh().catch(err=>{
+  console.error(err);
+  showToast('โหลดข้อมูลไม่สำเร็จ');
+});

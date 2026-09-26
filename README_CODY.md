@@ -144,3 +144,10 @@ window.MEESOOK_SUPABASE = {
   - กดยืนยัน -> เปิด Checkout ทันที
 - Buy Now ใช้ cart แบบ replace เพื่อให้ flow เป็น single immediate purchase
 - Add to Cart ยังใช้ flow เดิมและให้ลูกค้าช้อปต่อได้
+
+
+## v7 Admin fix
+- แก้ JS bug ที่ทำให้เมนู/CMS หลังบ้านกดไม่ได้
+- CMS Save ใช้งานได้ และเปลี่ยนผลลัพธ์เป็น toast แทน browser alert
+- ปุ่มเปิดหน้าร้านเปลี่ยนจาก text link ลอย ๆ เป็น sidebar action button
+- confirm modal ของ destructive action ยังอยู่เหมือนเดิม
