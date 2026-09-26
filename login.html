@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>เข้าสู่ระบบ | มีสุข</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="login-page">
+  <main class="auth-gate">
+    <form id="loginForm" class="auth-card">
+      <small>MEE SOOK ADMIN</small>
+      <h1>เข้าสู่ระบบหลังบ้าน</h1>
+      <p>จัดการสินค้า ออเดอร์ และสต๊อกของร้านมีสุข</p>
+      <label>อีเมล
+        <input id="loginEmail" type="email" autocomplete="email" required>
+      </label>
+      <label>รหัสผ่าน
+        <input id="loginPassword" type="password" autocomplete="current-password" minlength="6" required>
+      </label>
+      <div id="loginError" class="auth-error hidden"></div>
+      <button class="primary" type="submit">เข้าสู่ระบบ</button>
+      <a class="login-back" href="index.html">กลับหน้าร้าน</a>
+    </form>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.4/dist/umd/supabase.min.js"></script>
+  <script src="supabase-config.js"></script>
+  <script>
+    const form = document.getElementById('loginForm');
+    const errorBox = document.getElementById('loginError');
+    const showError = (message) => { errorBox.textContent = message; errorBox.classList.remove('hidden'); };
+
+    (async () => {
+      if (!window.MeeSookAuth?.ready()) return showError('ยังไม่ได้ตั้งค่า Supabase');
+      if (await window.MeeSookAuth.session()) window.location.href = 'admin.html';
+    })();
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      errorBox.classList.add('hidden');
+      try {
+        await window.MeeSookAuth.signIn(
+          document.getElementById('loginEmail').value.trim(),
+          document.getElementById('loginPassword').value
+        );
+        window.location.href = 'admin.html';
+      } catch (error) {
+        showError(error.message || 'อีเมลหรือรหัสผ่านไม่ถูกต้อง');
+      }
+    });
+  </script>
+</body>
+</html>
